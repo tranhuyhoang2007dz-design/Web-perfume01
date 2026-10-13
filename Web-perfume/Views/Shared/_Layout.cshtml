@@ -1,0 +1,330 @@
+﻿@using Web_perfume.Helpers
+@{
+    var currentUser = AuthHelper.GetUser(Session);
+    var cartCount = 0;
+    try
+    {
+        using (var db = new Web_perfume.Models.PerfumeShopDBEntities())
+        {
+            var cart = CartHelper.GetCart(Session, db);
+            cartCount = cart.TotalItems;
+        }
+    }
+    catch
+    {
+        cartCount = 0;
+    }
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@(ViewBag.Title ?? "Mona Perfume") - Nước Hoa Chính Hãng</title>
+
+    <!-- Google Fonts: Luxury Serif & Clean Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400..700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 & Bootstrap Icons -->
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Luxury Theme Styles -->
+    <link href="~/Content/luxury-style.css" rel="stylesheet" />
+    @RenderSection("styles", required: false)
+</head>
+<body>
+    <!-- Top Announcement -->
+    <div class="top-announcement">
+        <div class="container d-flex justify-content-between align-items-center">
+            <span class="d-none d-md-inline">Hotline: 1900 6868 (9:00 - 21:30)</span>
+            <span>Miễn phí vận chuyển cho đơn hàng từ 1.000.000₫ • Cam kết 100% chính hãng</span>
+            <span class="d-none d-md-inline">Đổi trả miễn phí 7 ngày</span>
+        </div>
+    </div>
+
+    <!-- Luxury Header -->
+    <header class="luxury-header">
+        <div class="container">
+            <div class="d-flex align-items-center justify-content-between">
+                
+                <!-- Mobile Menu Button -->
+                <button class="nav-action-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu" aria-label="Menu">
+                    <i class="bi bi-list fs-3"></i>
+                </button>
+
+                <!-- Brand Logo -->
+                <a href="@Url.Action("Index", "Home")" class="brand-logo">
+                    MONA<span>.</span>PERFUME
+                </a>
+
+                <!-- Desktop Navigation -->
+                <nav class="d-none d-lg-block">
+                    <ul class="main-nav">
+                        <li><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+                        <li><a href="@Url.Action("Index", "Products")">Nước hoa</a></li>
+                        <li><a href="@Url.Action("Index", "Products", new { gender = "Men" })">Nam</a></li>
+                        <li><a href="@Url.Action("Index", "Products", new { gender = "Women" })">Nữ</a></li>
+                        <li><a href="@Url.Action("Index", "Products", new { gender = "Unisex" })">Unisex</a></li>
+                        <li><a href="@Url.Action("Index", "Brands")">Thương hiệu</a></li>
+                        <li><a href="@Url.Action("Index", "Products", new { sort = "sale" })" class="text-danger">Ưu đãi</a></li>
+                    </ul>
+                </nav>
+
+                <!-- Navigation Action Icons -->
+                <div class="nav-actions">
+                    <!-- Search Button -->
+                    <button type="button" class="nav-action-btn" data-bs-toggle="modal" data-bs-target="#searchModal" title="Tìm kiếm">
+                        <i class="bi bi-search"></i>
+                    </button>
+
+                    <!-- User Account Dropdown -->
+                    <div class="dropdown">
+                        <button class="nav-action-btn dropdown-toggle" type="button" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Tài khoản">
+                            <i class="bi bi-person"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="userMenuDropdown" style="min-width: 200px;">
+                            @if (currentUser != null)
+                            {
+                                <li class="px-3 py-2 border-bottom">
+                                    <div class="small text-muted">Xin chào,</div>
+                                    <div class="fw-bold text-truncate">@currentUser.FullName</div>
+                                    <div class="badge bg-dark mt-1">@currentUser.RoleName</div>
+                                </li>
+                                if (currentUser.IsAdmin)
+                                {
+                                    <li><a class="dropdown-item py-2" href="@Url.Action("Index", "Admin")"><i class="bi bi-speedometer2 me-2"></i>Quản trị hệ thống</a></li>
+                                }
+                                <li><a class="dropdown-item py-2" href="@Url.Action("Profile", "Account")"><i class="bi bi-person-lines-fill me-2"></i>Tài khoản của tôi</a></li>
+                                <li><a class="dropdown-item py-2" href="@Url.Action("Profile", "Account")#orders"><i class="bi bi-box-seam me-2"></i>Lịch sử đơn hàng</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item py-2 text-danger" href="@Url.Action("Logout", "Account")"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
+                            }
+                            else
+                            {
+                                <li><a class="dropdown-item py-2" href="@Url.Action("Login", "Account")"><i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập</a></li>
+                                <li><a class="dropdown-item py-2" href="@Url.Action("Register", "Account")"><i class="bi bi-person-plus me-2"></i>Đăng ký tài khoản</a></li>
+                            }
+                        </ul>
+                    </div>
+
+                    <!-- Cart Drawer / Link -->
+                    <a href="@Url.Action("Index", "Cart")" class="nav-action-btn" title="Giỏ hàng">
+                        <i class="bi bi-bag"></i>
+                        <span class="badge-count" id="cartBadgeCount">@cartCount</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Offcanvas Menu -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileMenu" aria-labelledby="mobileMenuLabel">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title font-serif" id="mobileMenuLabel">MONA PERFUME</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <form action="@Url.Action("Index", "Products")" method="get" class="mb-4">
+                <div class="input-group">
+                    <input type="text" name="keyword" class="form-control" placeholder="Tìm nước hoa, thương hiệu...">
+                    <button class="btn btn-dark" type="submit"><i class="bi bi-search"></i></button>
+                </div>
+            </form>
+            <ul class="list-unstyled mb-4">
+                <li class="py-2 border-bottom"><a href="@Url.Action("Index", "Home")" class="fw-semibold">Trang chủ</a></li>
+                <li class="py-2 border-bottom"><a href="@Url.Action("Index", "Products")" class="fw-semibold">Tất cả Nước hoa</a></li>
+                <li class="py-2 border-bottom"><a href="@Url.Action("Index", "Products", new { gender = "Men" })">Nước hoa Nam</a></li>
+                <li class="py-2 border-bottom"><a href="@Url.Action("Index", "Products", new { gender = "Women" })">Nước hoa Nữ</a></li>
+                <li class="py-2 border-bottom"><a href="@Url.Action("Index", "Products", new { gender = "Unisex" })">Nước hoa Unisex</a></li>
+                <li class="py-2 border-bottom"><a href="@Url.Action("Index", "Brands")">Thương hiệu</a></li>
+                <li class="py-2 border-bottom"><a href="@Url.Action("Index", "Products", new { sort = "sale" })" class="text-danger fw-semibold">Khuyến mãi HOT</a></li>
+            </ul>
+            @if (currentUser == null)
+            {
+                <div class="d-grid gap-2">
+                    <a href="@Url.Action("Login", "Account")" class="btn btn-luxury-dark">Đăng nhập</a>
+                    <a href="@Url.Action("Register", "Account")" class="btn btn-luxury-outline">Đăng ký</a>
+                </div>
+            }
+            else
+            {
+                <div class="d-grid gap-2">
+                    <a href="@Url.Action("Profile", "Account")" class="btn btn-luxury-outline">Tài khoản của tôi</a>
+                    <a href="@Url.Action("Logout", "Account")" class="btn btn-outline-danger">Đăng xuất</a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Search Modal -->
+    <div class="modal fade" id="searchModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 p-4">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title font-serif">Tìm kiếm mùi hương của bạn</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="@Url.Action("Index", "Products")" method="get">
+                        <div class="input-group input-group-lg border-bottom pb-2">
+                            <span class="input-group-text bg-transparent border-0 px-0"><i class="bi bi-search fs-4"></i></span>
+                            <input type="text" name="keyword" class="form-control border-0 shadow-none ps-3" placeholder="Nhập tên sản phẩm, thương hiệu (Dior, Chanel, Sauvage...)" autofocus>
+                            <button class="btn btn-luxury-dark" type="submit">Tìm kiếm</button>
+                        </div>
+                    </form>
+                    <div class="mt-4">
+                        <span class="text-muted small text-uppercase letter-spacing-1">Gợi ý tìm kiếm:</span>
+                        <div class="d-flex flex-wrap gap-2 mt-2">
+                            <a href="@Url.Action("Index", "Products", new { keyword = "Dior" })" class="badge bg-light text-dark text-decoration-none border p-2">Dior</a>
+                            <a href="@Url.Action("Index", "Products", new { keyword = "Chanel" })" class="badge bg-light text-dark text-decoration-none border p-2">Chanel</a>
+                            <a href="@Url.Action("Index", "Products", new { keyword = "Sauvage" })" class="badge bg-light text-dark text-decoration-none border p-2">Sauvage</a>
+                            <a href="@Url.Action("Index", "Products", new { keyword = "EDP" })" class="badge bg-light text-dark text-decoration-none border p-2">Eau de Parfum</a>
+                            <a href="@Url.Action("Index", "Products", new { gender = "Unisex" })" class="badge bg-light text-dark text-decoration-none border p-2">Unisex</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Body -->
+    <main role="main">
+        @RenderBody()
+    </main>
+
+    <!-- Luxury Footer -->
+    <footer class="luxury-footer">
+        <div class="container">
+            <div class="row g-4">
+                <!-- Col 1: Brand Info -->
+                <div class="col-lg-4 col-md-6">
+                    <a href="@Url.Action("Index", "Home")" class="footer-logo">MONA<span>.</span>PERFUME</a>
+                    <p class="text-secondary pe-lg-4" style="line-height: 1.8;">
+                        Không gian hương thơm tinh tuyển hàng đầu. Chúng tôi kết nối bạn với những tuyệt tác nước hoa chính hãng từ những thương hiệu trứ danh thế giới.
+                    </p>
+                    <div class="d-flex gap-3 mt-3">
+                        <a href="#" class="text-secondary fs-5" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-secondary fs-5" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                        <a href="#" class="text-secondary fs-5" aria-label="Tiktok"><i class="bi bi-tiktok"></i></a>
+                        <a href="#" class="text-secondary fs-5" aria-label="Youtube"><i class="bi bi-youtube"></i></a>
+                    </div>
+                </div>
+
+                <!-- Col 2: Quick Links -->
+                <div class="col-lg-2 col-md-6 col-6">
+                    <h6 class="footer-heading">Khám phá</h6>
+                    <ul class="footer-links">
+                        <li><a href="@Url.Action("Index", "Products")">Bộ sưu tập</a></li>
+                        <li><a href="@Url.Action("Index", "Products", new { gender = "Men" })">Nước hoa Nam</a></li>
+                        <li><a href="@Url.Action("Index", "Products", new { gender = "Women" })">Nước hoa Nữ</a></li>
+                        <li><a href="@Url.Action("Index", "Products", new { gender = "Unisex" })">Nước hoa Unisex</a></li>
+                        <li><a href="@Url.Action("Index", "Brands")">Thương hiệu</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3: Customer Care -->
+                <div class="col-lg-3 col-md-6 col-6">
+                    <h6 class="footer-heading">Hỗ trợ khách hàng</h6>
+                    <ul class="footer-links">
+                        <li><a href="#">Chính sách đổi trả 7 ngày</a></li>
+                        <li><a href="#">Bảo hành chính hãng 100%</a></li>
+                        <li><a href="#">Phương thức thanh toán & COD</a></li>
+                        <li><a href="#">Chính sách bảo mật</a></li>
+                        <li><a href="#">Tra cứu trạng thái đơn hàng</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 4: Newsletter -->
+                <div class="col-lg-3 col-md-6">
+                    <h6 class="footer-heading">Đăng ký nhận ưu đãi</h6>
+                    <p class="text-secondary small">Nhận thông tin sớm nhất về các đợt mở bán giới hạn và mã giảm giá đặc quyền.</p>
+                    <form onsubmit="subscribeNewsletter(event)">
+                        <input type="email" class="footer-newsletter-input" placeholder="Nhập email của bạn..." required>
+                        <button type="submit" class="btn btn-luxury-gold w-100 mt-2">Đăng ký ngay</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div>&copy; @DateTime.Now.Year MONA PERFUME. Đồ án môn học Phát triển Website.</div>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="badge bg-secondary">Bảo mật SSL</span>
+                    <span class="badge bg-secondary">COD Toàn quốc</span>
+                    <span class="badge bg-secondary">100% Authentic</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="~/Scripts/jquery-3.7.0.min.js"></script>
+    <script src="~/Scripts/bootstrap.bundle.min.js"></script>
+
+    <!-- Global Store Interactions -->
+    <script>
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'luxury-toast';
+            
+            let icon = '<i class="bi bi-check-circle-fill text-warning"></i>';
+            if (type === 'error') icon = '<i class="bi bi-exclamation-triangle-fill text-danger"></i>';
+
+            toast.innerHTML = `${icon} <span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => toast.classList.add('show'), 50);
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 3500);
+        }
+
+        function quickAddToCart(variantId, quantity) {
+            $.ajax({
+                url: '@Url.Action("AddToCart", "Cart")',
+                type: 'POST',
+                data: { variantId: variantId, quantity: quantity },
+                success: function (res) {
+                    if (res && res.success) {
+                        $('#cartBadgeCount').text(res.cartCount);
+                        showToast(res.message || 'Đã thêm sản phẩm vào giỏ hàng thành công!');
+                    } else {
+                        showToast(res ? res.message : 'Có lỗi xảy ra, vui lòng thử lại', 'error');
+                    }
+                },
+                error: function () {
+                    showToast('Không thể kết nối đến máy chủ', 'error');
+                }
+            });
+        }
+
+        function toggleWishlist(btn, productId) {
+            $(btn).toggleClass('active');
+            if ($(btn).hasClass('active')) {
+                $(btn).find('i').removeClass('bi-heart').addClass('bi-heart-fill');
+                showToast('Đã thêm vào danh sách yêu thích!');
+            } else {
+                $(btn).find('i').removeClass('bi-heart-fill').addClass('bi-heart');
+                showToast('Đã bỏ khỏi danh sách yêu thích.');
+            }
+        }
+
+        function subscribeNewsletter(e) {
+            e.preventDefault();
+            showToast('Cảm ơn bạn đã đăng ký nhận tin từ MONA PERFUME!');
+            e.target.reset();
+        }
+    </script>
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>
+

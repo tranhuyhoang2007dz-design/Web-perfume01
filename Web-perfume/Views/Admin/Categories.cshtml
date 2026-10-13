@@ -1,0 +1,76 @@
+﻿@model List<Web_perfume.Models.Category>
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.Title = "Quản Lý Danh Mục";
+}
+
+<div class="row g-4">
+    <!-- Add Category Card -->
+    <div class="col-lg-4">
+        <div class="card border border-light-subtle rounded-0 bg-white p-4 shadow-none">
+            <h5 class="font-serif mb-3 pb-2 border-bottom">Thêm Danh Mục Mới</h5>
+
+            @using (Html.BeginForm("CreateCategory", "Admin", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold text-uppercase">Tên danh mục:</label>
+                    <input type="text" name="CategoryName" class="form-control" placeholder="Ví dụ: Nước hoa Niche, Mini" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold text-uppercase">Mô tả:</label>
+                    <textarea name="Description" class="form-control" rows="3" placeholder="Mô tả nhóm sản phẩm..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-luxury-dark w-100 py-2">
+                    <i class="bi bi-plus-circle me-1"></i> Lưu Danh Mục
+                </button>
+            }
+        </div>
+    </div>
+
+    <!-- Categories Table -->
+    <div class="col-lg-8">
+        <div class="card border border-light-subtle rounded-0 bg-white p-4 shadow-none">
+            <h5 class="font-serif mb-3 pb-2 border-bottom">Danh Mục Nước Hoa (@Model.Count)</h5>
+
+            <div class="table-responsive">
+                <table class="table align-middle small mb-0 table-hover">
+                    <thead class="bg-light text-uppercase">
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên danh mục</th>
+                            <th>Slug</th>
+                            <th>Số sản phẩm</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in Model)
+                        {
+                            <tr>
+                                <td>#@c.CategoryID</td>
+                                <td><strong>@c.CategoryName</strong></td>
+                                <td><code>@c.Slug</code></td>
+                                <td><span class="badge bg-light text-dark border">@c.Products.Count sản phẩm</span></td>
+                                <td>
+                                    @if (c.IsActive)
+                                    {
+                                        <span class="badge bg-success">Hoạt động</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Tạm ẩn</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+

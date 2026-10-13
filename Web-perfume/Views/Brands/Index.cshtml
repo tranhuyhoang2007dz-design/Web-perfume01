@@ -1,0 +1,43 @@
+﻿@model List<Web_perfume.Models.Brand>
+@{
+    ViewBag.Title = "Thương Hiệu Nước Hoa";
+}
+
+<!-- Breadcrumbs -->
+<div class="bg-light py-3 border-bottom">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 small">
+                <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Thương hiệu</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="text-center max-w-700 mx-auto mb-5">
+        <span class="section-subtitle">Bộ Sưu Tập Danh Tiếng</span>
+        <h1 class="section-title">Thương Hiệu Nước Hoa Cao Cấp</h1>
+        <p class="section-desc">Khám phá các nhà sáng chế hương thơm kinh điển trên khắp thế giới được phân phối chính hãng tại AURA PARFUMS.</p>
+    </div>
+
+    <div class="row g-4">
+        @foreach (var brand in Model)
+        {
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <a href="@Url.Action("Detail", "Brands", new { id = brand.BrandID })" class="brand-box">
+                    <div class="brand-box-name">@brand.BrandName</div>
+                    <div class="brand-box-origin">@(string.IsNullOrEmpty(brand.Country) ? "Pháp" : brand.Country)</div>
+                    <p class="text-muted small mt-2 mb-0 text-truncate">
+                        @(string.IsNullOrEmpty(brand.Description) ? "Thương hiệu nước hoa đẳng cấp quốc tế" : brand.Description)
+                    </p>
+                    <span class="btn-card-add mt-3">
+                        Xem sản phẩm <i class="bi bi-arrow-right ms-1"></i>
+                    </span>
+                </a>
+            </div>
+        }
+    </div>
+</div>
+

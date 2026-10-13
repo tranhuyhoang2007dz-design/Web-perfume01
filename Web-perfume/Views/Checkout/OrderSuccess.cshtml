@@ -1,0 +1,107 @@
+﻿@model Web_perfume.Models.Order
+@{
+    ViewBag.Title = "Đặt Hàng Thành Công";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border border-light-subtle rounded-0 bg-white p-5 text-center shadow-none mb-4">
+                <div class="display-3 text-success mb-3">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <h1 class="font-serif display-6 mb-2">Cảm Ơn Quý Khách Đã Đặt Hàng!</h1>
+                <p class="text-secondary mb-4">
+                    Đơn hàng của bạn đã được tiếp nhận và đang được đội ngũ AURA PARFUMS chuẩn bị cẩn trọng.
+                </p>
+
+                <div class="bg-light p-3 border mb-4 text-start">
+                    <div class="row g-3 small">
+                        <div class="col-sm-6">
+                            <span class="text-muted d-block">Mã đơn hàng:</span>
+                            <strong class="fs-6 text-dark">#@Model.OrderCode</strong>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted d-block">Thời gian đặt:</span>
+                            <strong>@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</strong>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted d-block">Người nhận:</span>
+                            <strong>@Model.ReceiverName (@Model.ReceiverPhone)</strong>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted d-block">Phương thức thanh toán:</span>
+                            <strong>@(Model.PaymentMethod == "COD" ? "Thanh toán khi nhận hàng (COD)" : "Chuyển khoản ngân hàng")</strong>
+                        </div>
+                        <div class="col-12">
+                            <span class="text-muted d-block">Địa chỉ nhận hàng:</span>
+                            <strong>@Model.ShippingAddress</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Items Snapshot List -->
+                <h5 class="font-serif text-start mb-3">Chi Tiết Sản Phẩm Trong Đơn</h5>
+                <div class="table-responsive border mb-4">
+                    <table class="table align-middle mb-0 small text-start">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th class="text-center">Dung tích</th>
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-end">Đơn giá</th>
+                                <th class="text-end">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.OrderItems)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@item.ProductNameSnapshot</strong>
+                                        <div class="text-muted small">SKU: @item.SKU</div>
+                                    </td>
+                                    <td class="text-center">@(item.VolumeML)ml</td>
+                                    <td class="text-center">@item.Quantity</td>
+                                    <td class="text-end">@item.UnitPrice.ToString("N0") ₫</td>
+                                    <td class="text-end fw-bold">@((item.UnitPrice * item.Quantity).ToString("N0")) ₫</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="border-top">
+                            <tr>
+                                <td colspan="4" class="text-end">Tạm tính:</td>
+                                <td class="text-end fw-semibold">@Model.SubTotal.ToString("N0") ₫</td>
+                            </tr>
+                            @if (Model.DiscountAmount > 0)
+                            {
+                                <tr class="text-danger">
+                                    <td colspan="4" class="text-end">Giảm giá:</td>
+                                    <td class="text-end">-@Model.DiscountAmount.ToString("N0") ₫</td>
+                                </tr>
+                            }
+                            <tr>
+                                <td colspan="4" class="text-end">Phí vận chuyển:</td>
+                                <td class="text-end">@(Model.ShippingFee == 0 ? "Miễn phí" : Model.ShippingFee.ToString("N0") + " ₫")</td>
+                            </tr>
+                            <tr class="fw-bold fs-6">
+                                <td colspan="4" class="text-end">Tổng cộng:</td>
+                                <td class="text-end text-dark">@Model.TotalAmount.ToString("N0") ₫</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="@Url.Action("Index", "Products")" class="btn btn-luxury-dark px-4 py-2">
+                        Tiếp Tục Mua Sắm
+                    </a>
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-luxury-outline px-4 py-2">
+                        Về Trang Chủ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

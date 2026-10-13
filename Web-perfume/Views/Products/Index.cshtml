@@ -1,0 +1,208 @@
+﻿@model Web_perfume.Models.ProductListViewModel
+@{
+    ViewBag.Title = Model.CurrentBrandName ?? Model.CurrentCategoryName ?? "Bộ Sưu Tập Nước Hoa";
+}
+
+<!-- Breadcrumbs -->
+<div class="bg-light py-3 border-bottom">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 small">
+                <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="@Url.Action("Index", "Products")">Nước hoa</a></li>
+                @if (!string.IsNullOrEmpty(Model.CurrentBrandName))
+                {
+                    <li class="breadcrumb-item active" aria-current="page">@Model.CurrentBrandName</li>
+                }
+                else if (!string.IsNullOrEmpty(Model.CurrentCategoryName))
+                {
+                    <li class="breadcrumb-item active" aria-current="page">@Model.CurrentCategoryName</li>
+                }
+                else if (!string.IsNullOrEmpty(Model.Gender))
+                {
+                    <li class="breadcrumb-item active" aria-current="page">Nước hoa @Model.Gender</li>
+                }
+                else
+                {
+                    <li class="breadcrumb-item active" aria-current="page">Tất cả sản phẩm</li>
+                }
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="container py-5">
+    <!-- Header Title -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center pb-4 mb-4 border-bottom">
+        <div>
+            <h1 class="font-serif h2 mb-1">
+                @(Model.CurrentBrandName ?? Model.CurrentCategoryName ?? (!string.IsNullOrEmpty(Model.Gender) ? "Nước Hoa " + Model.Gender : "Bộ Sưu Tập Nước Hoa"))
+            </h1>
+            <p class="text-muted small mb-0">Tìm thấy <strong>@Model.TotalCount</strong> mùi hương tinh tuyển</p>
+        </div>
+
+        <!-- Sort Control -->
+        <div class="d-flex align-items-center gap-2 mt-3 mt-md-0">
+            <label class="small text-muted text-nowrap">Sắp xếp theo:</label>
+            <select class="form-select form-select-sm" style="width: auto; min-width: 170px;" onchange="applySort(this.value)">
+                <option value="newest" @(Model.SortBy == "newest" ? "selected" : "")>Mới nhất</option>
+                <option value="price_asc" @(Model.SortBy == "price_asc" ? "selected" : "")>Giá: Thấp đến Cao</option>
+                <option value="price_desc" @(Model.SortBy == "price_desc" ? "selected" : "")>Giá: Cao đến Thấp</option>
+                <option value="name_asc" @(Model.SortBy == "name_asc" ? "selected" : "")>Tên: A đến Z</option>
+                <option value="sale" @(Model.SortBy == "sale" ? "selected" : "")>Ưu đãi nhiều nhất</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Sidebar Filters -->
+        <div class="col-lg-3">
+            <div class="card border border-light-subtle p-3 rounded-0 bg-white shadow-none">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                    <span class="fw-bold text-uppercase small letter-spacing-1">Bộ Lọc Tìm Kiếm</span>
+                    <a href="@Url.Action("Index", "Products")" class="text-danger small">Xóa tất cả</a>
+                </div>
+
+                <form id="filterForm" method="get" action="@Url.Action("Index", "Products")">
+                    @if (!string.IsNullOrEmpty(Model.Keyword))
+                    {
+                        <input type="hidden" name="keyword" value="@Model.Keyword" />
+                    }
+                    <input type="hidden" name="sort" id="sortInput" value="@Model.SortBy" />
+
+                    <!-- Filter by Brand -->
+                    <div class="mb-4">
+                        <h6 class="font-serif small fw-bold text-uppercase mb-2">Thương hiệu</h6>
+                        <select name="brandId" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">-- Tất cả thương hiệu --</option>
+                            @foreach (var b in Model.AvailableBrands)
+                            {
+                                <option value="@b.BrandID" @(Model.BrandId == b.BrandID ? "selected" : "")>@b.BrandName</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Filter by Category -->
+                    <div class="mb-4">
+                        <h6 class="font-serif small fw-bold text-uppercase mb-2">Danh mục</h6>
+                        <select name="categoryId" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">-- Tất cả danh mục --</option>
+                            @foreach (var c in Model.AvailableCategories)
+                            {
+                                <option value="@c.CategoryID" @(Model.CategoryId == c.CategoryID ? "selected" : "")>@c.CategoryName</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Filter by Gender -->
+                    <div class="mb-4">
+                        <h6 class="font-serif small fw-bold text-uppercase mb-2">Giới tính</h6>
+                        <div class="d-flex flex-column gap-2 small">
+                            <label class="d-flex align-items-center gap-2 cursor-pointer">
+                                <input type="radio" name="gender" value="" @(string.IsNullOrEmpty(Model.Gender) ? "checked" : "") onchange="this.form.submit()"> Tất cả
+                            </label>
+                            @foreach (var g in Model.AvailableGenders)
+                            {
+                                <label class="d-flex align-items-center gap-2 cursor-pointer">
+                                    <input type="radio" name="gender" value="@g" @(Model.Gender == g ? "checked" : "") onchange="this.form.submit()"> @g
+                                </label>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Filter by Concentration -->
+                    <div class="mb-4">
+                        <h6 class="font-serif small fw-bold text-uppercase mb-2">Nồng độ hương</h6>
+                        <select name="concentration" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">-- Tất cả nồng độ --</option>
+                            @foreach (var conc in Model.AvailableConcentrations)
+                            {
+                                <option value="@conc" @(Model.Concentration == conc ? "selected" : "")>@conc</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Filter by Price Range -->
+                    <div class="mb-4">
+                        <h6 class="font-serif small fw-bold text-uppercase mb-2">Khoảng giá (VNĐ)</h6>
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <input type="number" name="minPrice" class="form-control form-control-sm" placeholder="Từ" value="@Model.MinPrice" />
+                            </div>
+                            <div class="col-6">
+                                <input type="number" name="maxPrice" class="form-control form-control-sm" placeholder="Đến" value="@Model.MaxPrice" />
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-luxury-dark w-100 py-2 small">Áp Dụng Giá</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Product Grid & Pagination -->
+        <div class="col-lg-9">
+            @if (Model.Products.Any())
+            {
+                <div class="row g-4">
+                    @foreach (var item in Model.Products)
+                    {
+                        <div class="col-md-4 col-sm-6">
+                            @Html.Partial("_ProductCard", item)
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination -->
+                if (Model.TotalPages > 1)
+                {
+                    <div class="d-flex justify-content-center mt-5">
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination pagination-sm">
+                                <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+                                    <a class="page-link text-dark" href="@Url.Action("Index", "Products", new { page = Model.Page - 1, keyword = Model.Keyword, brandId = Model.BrandId, categoryId = Model.CategoryId, gender = Model.Gender, concentration = Model.Concentration, minPrice = Model.MinPrice, maxPrice = Model.MaxPrice, sort = Model.SortBy })">
+                                        <i class="bi bi-chevron-left"></i>
+                                    </a>
+                                </li>
+                                @for (int i = 1; i <= Model.TotalPages; i++)
+                                {
+                                    <li class="page-item @(Model.Page == i ? "active" : "")">
+                                        <a class="page-link @(Model.Page == i ? "bg-dark border-dark text-white" : "text-dark")" href="@Url.Action("Index", "Products", new { page = i, keyword = Model.Keyword, brandId = Model.BrandId, categoryId = Model.CategoryId, gender = Model.Gender, concentration = Model.Concentration, minPrice = Model.MinPrice, maxPrice = Model.MaxPrice, sort = Model.SortBy })">
+                                            @i
+                                        </a>
+                                    </li>
+                                }
+                                <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
+                                    <a class="page-link text-dark" href="@Url.Action("Index", "Products", new { page = Model.Page + 1, keyword = Model.Keyword, brandId = Model.BrandId, categoryId = Model.CategoryId, gender = Model.Gender, concentration = Model.Concentration, minPrice = Model.MinPrice, maxPrice = Model.MaxPrice, sort = Model.SortBy })">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                }
+            }
+            else
+            {
+                <!-- Empty State -->
+                <div class="text-center py-5 px-3 border border-light-subtle bg-white">
+                    <div class="display-4 text-muted mb-3"><i class="bi bi-search"></i></div>
+                    <h3 class="font-serif h4 mb-2">Không tìm thấy sản phẩm phù hợp</h3>
+                    <p class="text-muted small mb-4">Thử thay đổi từ khóa tìm kiếm hoặc điều chỉnh lại tiêu chí lọc của bạn.</p>
+                    <a href="@Url.Action("Index", "Products")" class="btn btn-luxury-dark">
+                        Xem Tất Cả Sản Phẩm
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        function applySort(val) {
+            document.getElementById('sortInput').value = val;
+            document.getElementById('filterForm').submit();
+        }
+    </script>
+}
+

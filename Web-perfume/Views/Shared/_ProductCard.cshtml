@@ -1,0 +1,76 @@
+﻿@model Web_perfume.Models.ProductItemViewModel
+
+<div class="product-card">
+    <div class="product-thumb-wrapper">
+        <a href="@Url.Action("Detail", "Products", new { id = !string.IsNullOrEmpty(Model.Slug) ? Model.Slug : Model.ProductID.ToString() })">
+            <img src="@(!string.IsNullOrEmpty(Model.PrimaryImageUrl) ? Model.PrimaryImageUrl : "/Content/images/placeholder-perfume.svg")" 
+                 alt="@Model.ProductName" 
+                 loading="lazy" 
+                 onerror="this.src='/Content/images/placeholder-perfume.svg'" />
+        </a>
+
+        <div class="product-badges">
+            @if (Model.HasDiscount)
+            {
+                <span class="badge-tag badge-sale">-@Model.DiscountPercentage%</span>
+            }
+            @if (Model.IsFeatured)
+            {
+                <span class="badge-tag badge-new">NỔI BẬT</span>
+            }
+        </div>
+
+        <button type="button" class="wishlist-btn" title="Thêm vào danh sách yêu thích" onclick="toggleWishlist(this, @Model.ProductID)">
+            <i class="bi bi-heart"></i>
+        </button>
+    </div>
+
+    <div class="product-body">
+        <a href="@Url.Action("Detail", "Brands", new { id = Model.BrandID })" class="product-brand">
+            @Model.BrandName
+        </a>
+
+        <a href="@Url.Action("Detail", "Products", new { id = !string.IsNullOrEmpty(Model.Slug) ? Model.Slug : Model.ProductID.ToString() })" class="product-title" title="@Model.ProductName">
+            @Model.ProductName
+        </a>
+
+        <div class="product-meta-row">
+            @if (!string.IsNullOrEmpty(Model.Gender))
+            {
+                <span><i class="bi bi-gender-ambiguous me-1"></i>@Model.Gender</span>
+            }
+            @if (!string.IsNullOrEmpty(Model.Concentration))
+            {
+                <span>• @Model.Concentration</span>
+            }
+            @if (Model.DefaultVolumeML > 0)
+            {
+                <span>• @(Model.DefaultVolumeML)ml</span>
+            }
+        </div>
+
+        <div class="product-price-row">
+            <span class="price-current">@Model.DisplayPrice.ToString("N0") ₫</span>
+            @if (Model.HasDiscount)
+            {
+                <span class="price-original">@Model.MinPrice.ToString("N0") ₫</span>
+            }
+        </div>
+
+        <div class="card-action-bar">
+            @if (Model.TotalStock > 0 && Model.DefaultVariantID > 0)
+            {
+                <button type="button" class="btn-card-add" onclick="quickAddToCart(@Model.DefaultVariantID, 1)">
+                    <i class="bi bi-bag-plus"></i> Thêm vào giỏ
+                </button>
+            }
+            else
+            {
+                <button type="button" class="btn-card-add" disabled style="opacity: 0.6; cursor: not-allowed;">
+                    <i class="bi bi-slash-circle"></i> Hết hàng
+                </button>
+            }
+        </div>
+    </div>
+</div>
+

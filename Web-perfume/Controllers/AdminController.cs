@@ -1,0 +1,299 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Mvc;
+using Web_perfume.Helpers;
+using Web_perfume.Models;
+
+namespace Web_perfume.Controllers
+{
+    public class AdminController : Controller
+    {
+        private PerfumeShopDBEntities db = new PerfumeShopDBEntities();
+
+        // Security check filter helper
+        private bool CheckAdminAccess()
+        {
+            var user = AuthHelper.GetUser(Session);
+            return user != null && user.IsAdmin;
+        }
+
+        // ==========================================
+        // 1. DASHBOARD
+        // ==========================================
+        public ActionResult Index()
+        {
+            if (!CheckAdminAccess())
+            {
+                return RedirectToAction("Login", "Account", new { returnUrl = Url.Action("Index", "Admin") });
+            }
+
+            var model = new AdminDashboardViewModel
+            {
+                TotalProducts = db.Products.Count(),
+                TotalBrands = db.Brands.Count(),
+                TotalOrders = db.Orders.Count(),
+                TotalUsers = db.Users.Count(),
+                TotalRevenue = db.Orders.Any() ? db.Orders.Sum(o => o.TotalAmount) : 0,
+                PendingOrdersCount = db.Orders.Count(o => o.OrderStatus == "Pending"),
+                RecentOrders = db.Orders.OrderByDescending(o => o.OrderDate).Take(6).ToList()
+            };
+
+            return View(model);
+        }
+
+        // ==========================================
+        // 2. PRODUCT MANAGEMENT (CRUD)
+        // ==========================================
+        public ActionResult Products()
+        {
+            if (!CheckAdminAccess()) return RedirectToAction("Login", "Account");
+
+            var products = db.Products
+                .OrderByDescending(p => p.ProductID)
+                .ToList();
+
+            return View(products);
+        }
+
+        // GET: /admin/createproduct
+        public ActionResult CreateProduct()
+        {
+            if (!CheckAdminAccess()) return RedirectToAction("Login", "Account");
+
+            ViewBag.BrandID = new SelectList(db.Brands.Where(b => b.IsActive), "BrandID", "BrandName");
+            ViewBag.CategoryID = new SelectList(db.Categories.Where(c => c.IsActive), "CategoryID", "CategoryName");
+            return View();
+        }
+
+        // POST: /admin/createproduct
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult CreateProduct(Product product, int volumeML, decimal price, decimal? salePrice, int stockQuantity, string imageUrl)
+        {
+            if (!CheckAdminAccess()) return RedirectToAction("Login", "Account");
+
+            if (ModelState.IsValid)
+            {
+                product.CreatedAt = DateTime.Now;
+                product.Slug = GenerateSlug(product.ProductName);
+                db.Products.Add(product);
+                db.SaveChanges();
+
+                // Add initial Variant
+                var variant = new ProductVariant
+                {
+                    ProductID = product.ProductID,
+                    VolumeML = volumeML > 0 ? volumeML : 100,
+                    SKU = "PRD-" + product.ProductID + "-" + (volumeML > 0 ? volumeML : 100),
+                    Price = price > 0 ? price : 1000000,
+                    SalePrice = salePrice,
+                    StockQuantity = stockQuantity >= 0 ? stockQuantity : 10,
+                    IsActive = true
+                };
+                db.ProductVariants.Add(variant);
+
+                // Add primary image if provided
+                if (!string.IsNullOrWhiteSpace(imageUrl))
+                {
+                    db.ProductImages.Add(new ProductImage
+                    {
+                        ProductID = product.ProductID,
+                        ImageURL = imageUrl.Trim(),
+                        IsPrimary = true
+                    });
+                }
+                else
+                {
+                    db.ProductImages.Add(new ProductImage
+                    {
+                        ProductID = product.ProductID,
+                        ImageURL = "/Content/images/placeholder-perfume.svg",
+                        IsPrimary = true
+                    });
+                }
+
+                db.SaveChanges();
+                TempData["AdminSuccess"] = "Thêm sản phẩm mới thành công!";
+                return RedirectToAction("Products");
+            }
+
+            ViewBag.BrandID = new SelectList(db.Brands.Where(b => b.IsActive), "BrandID", "BrandName", product.BrandID);
+            ViewBag.CategoryID = new SelectList(db.Categories.Where(c => c.IsActive), "CategoryID", "CategoryName", product.CategoryID);
+            return View(product);
+        }
+
+        // GET: /admin/editproduct/{id}
+        public ActionResult EditProduct(int? id)
+        {
+            if (!CheckAdminAccess()) return RedirectToAction("Login", "Account");
+            if (!id.HasValue) return RedirectToAction("Products");
+
+            var product = db.Products.Find(id.Value);
+            if (product == null) return HttpNotFound();
+
+            ViewBag.BrandID = new SelectList(db.Brands.Where(b => b.IsActive), "BrandID", "BrandName", product.BrandID);
+            ViewBag.CategoryID = new SelectList(db.Categories.Where(c => c.IsActive), "CategoryID", "CategoryName", product.CategoryID);
+            return View(product);
+        }
+
+        // POST: /admin/editproduct/{id}
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult EditProduct(Product product)
+        {
+            if (!CheckAdminAccess()) return RedirectToAction("Login", "Account");
+
+            if (ModelState.IsValid)
+            {
+                var existing = db.Products.Find(product.ProductID);
+                if (existing != null)
+                {
+                    existing.ProductName = product.ProductName;
+                    existing.BrandID = product.BrandID;
+                    existing.CategoryID = product.CategoryID;
+                    existing.Gender = product.Gender;
+                    existing.Concentration = product.Concentration;
+                    existing.Description = product.Description;
+                    existing.IsFeatured = product.IsFeatured;
+                    existing.IsActive = product.IsActive;
+
+                    db.SaveChanges();
+                    TempData["AdminSuccess"] = "Cập nhật sản phẩm thành công!";
+                    return RedirectToAction("Products");
+                }
+            }
+
+            ViewBag.BrandID = new SelectList(db.Brands.Where(b => b.IsActive), "BrandID", "BrandName", product.BrandID);
+            ViewBag.CategoryID = new SelectList(db.Categories.Where(c => c.IsActive), "CategoryID", "CategoryName", product.CategoryID);
+            return View(product);
+        }
+
+        // POST: /admin/deleteproduct/{id}
+        [HttpPost]
+        public ActionResult DeleteProduct(int id)
+        {
+            if (!CheckAdminAccess()) return Json(new { success = false, message = "Chưa đăng nhập quyền Admin" });
+
+            var product = db.Products.Find(id);
+            if (product != null)
+            {
+                // Soft delete by setting IsActive = false
+                product.IsActive = !product.IsActive;
+                db.SaveChanges();
+                return Json(new { success = true, isActive = product.IsActive });
+            }
+            return Json(new { success = false });
+        }
+
+        // ==========================================
+        // 3. BRAND MANAGEMENT (CRUD)
+        // ==========================================
+        public ActionResult Brands()
+        {
+            if (!CheckAdminAccess()) return RedirectToAction("Login", "Account");
+
+            var brands = db.Brands.OrderBy(b => b.BrandName).ToList();
+            return View(brands);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult CreateBrand(Brand brand)
+        {
+            if (!CheckAdminAccess()) return RedirectToAction("Login", "Account");
+
+            if (ModelState.IsValid)
+            {
+                brand.IsActive = true;
+                db.Brands.Add(brand);
+                db.SaveChanges();
+                TempData["AdminSuccess"] = "Thêm thương hiệu " + brand.BrandName + " thành công!";
+            }
+            return RedirectToAction("Brands");
+        }
+
+        // ==========================================
+        // 4. CATEGORY MANAGEMENT (CRUD)
+        // ==========================================
+        public ActionResult Categories()
+        {
+            if (!CheckAdminAccess()) return RedirectToAction("Login", "Account");
+
+            var categories = db.Categories.OrderBy(c => c.CategoryID).ToList();
+            return View(categories);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult CreateCategory(Category category)
+        {
+            if (!CheckAdminAccess()) return RedirectToAction("Login", "Account");
+
+            if (ModelState.IsValid)
+            {
+                category.Slug = GenerateSlug(category.CategoryName);
+                category.IsActive = true;
+                db.Categories.Add(category);
+                db.SaveChanges();
+                TempData["AdminSuccess"] = "Thêm danh mục mới thành công!";
+            }
+            return RedirectToAction("Categories");
+        }
+
+        // ==========================================
+        // 5. ORDERS MANAGEMENT
+        // ==========================================
+        public ActionResult Orders()
+        {
+            if (!CheckAdminAccess()) return RedirectToAction("Login", "Account");
+
+            var orders = db.Orders.OrderByDescending(o => o.OrderDate).ToList();
+            return View(orders);
+        }
+
+        [HttpPost]
+        public ActionResult UpdateOrderStatus(int orderId, string status)
+        {
+            if (!CheckAdminAccess()) return Json(new { success = false, message = "Không có quyền" });
+
+            var order = db.Orders.Find(orderId);
+            if (order != null)
+            {
+                order.OrderStatus = status;
+                if (status == "Delivered")
+                {
+                    order.PaymentStatus = "Paid";
+                }
+                db.SaveChanges();
+                return Json(new { success = true });
+            }
+            return Json(new { success = false });
+        }
+
+        // Helper slug generator
+        private string GenerateSlug(string phrase)
+        {
+            if (string.IsNullOrEmpty(phrase)) return Guid.NewGuid().ToString();
+            string str = phrase.ToLower().Trim();
+            // Simple Vietnamese character conversion
+            str = System.Text.RegularExpressions.Regex.Replace(str, @"[áàảãạâấầẩẫậăắằẳẵặ]", "a");
+            str = System.Text.RegularExpressions.Regex.Replace(str, @"[éèẻẽẹêếềểễệ]", "e");
+            str = System.Text.RegularExpressions.Regex.Replace(str, @"[íìỉĩị]", "i");
+            str = System.Text.RegularExpressions.Regex.Replace(str, @"[óòỏõọôốồổỗộơớờởỡợ]", "o");
+            str = System.Text.RegularExpressions.Regex.Replace(str, @"[úùủũụưứừửữự]", "u");
+            str = System.Text.RegularExpressions.Regex.Replace(str, @"[ýỳỷỹỵ]", "y");
+            str = System.Text.RegularExpressions.Regex.Replace(str, @"[đ]", "d");
+            str = System.Text.RegularExpressions.Regex.Replace(str, @"[^a-z0-9\s-]", "");
+            str = System.Text.RegularExpressions.Regex.Replace(str, @"\s+", "-").Trim('-');
+            return str;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing) db.Dispose();
+            base.Dispose(disposing);
+        }
+    }
+}
+

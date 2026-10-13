@@ -1,0 +1,434 @@
+﻿@model Web_perfume.Models.ProductDetailViewModel
+@{
+    ViewBag.Title = Model.Product.ProductName;
+    var primaryImage = Model.Images.FirstOrDefault(i => i.IsPrimary)?.ImageURL 
+                       ?? Model.Images.FirstOrDefault()?.ImageURL 
+                       ?? "/Content/images/placeholder-perfume.svg";
+}
+
+<!-- Breadcrumbs -->
+<div class="bg-light py-3 border-bottom">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 small">
+                <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="@Url.Action("Index", "Products")">Nước hoa</a></li>
+                <li class="breadcrumb-item"><a href="@Url.Action("Detail", "Brands", new { id = Model.Product.BrandID })">@Model.Product.Brand.BrandName</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@Model.Product.ProductName</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-5">
+        <!-- ==========================================
+             LEFT: IMAGE GALLERY
+             ========================================== -->
+        <div class="col-lg-6">
+            <div class="product-gallery-main">
+                <img id="mainProductImage" 
+                     src="@primaryImage" 
+                     alt="@Model.Product.ProductName" 
+                     onerror="this.src='/Content/images/placeholder-perfume.svg'" />
+            </div>
+
+            @if (Model.Images.Count > 1)
+            {
+                <div class="product-gallery-thumbs">
+                    @foreach (var img in Model.Images)
+                    {
+                        <div class="gallery-thumb-item @(img.ImageURL == primaryImage ? "active" : "")" onclick="switchGalleryImage(this, '@img.ImageURL')">
+                            <img src="@img.ImageURL" alt="Thumbnail" onerror="this.src='/Content/images/placeholder-perfume.svg'" />
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- ==========================================
+             RIGHT: PRODUCT INFO & VARIANT SELECTOR
+             ========================================== -->
+        <div class="col-lg-6">
+            <div class="ps-lg-4">
+                <!-- Brand -->
+                <a href="@Url.Action("Detail", "Brands", new { id = Model.Product.BrandID })" class="text-uppercase small fw-bold letter-spacing-1 text-gold mb-2 d-inline-block">
+                    @Model.Product.Brand.BrandName
+                </a>
+
+                <!-- Product Title -->
+                <h1 class="font-serif display-6 mb-3">@Model.Product.ProductName</h1>
+
+                <!-- Rating & Reviews -->
+                <div class="d-flex align-items-center gap-2 mb-3 pb-3 border-bottom">
+                    <div class="text-warning small">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <i class="bi @(i <= Math.Round(Model.AverageRating) ? "bi-star-fill" : "bi-star")"></i>
+                        }
+                    </div>
+                    <span class="small fw-semibold">@Model.AverageRating.ToString("0.0")</span>
+                    <span class="text-muted small">(@Model.ReviewCount đánh giá)</span>
+                    <span class="text-muted small ms-2">• Mã SP: <span id="displaySku">@(Model.SelectedVariant != null ? Model.SelectedVariant.SKU : "N/A")</span></span>
+                </div>
+
+                <!-- Price Row -->
+                <div class="mb-4">
+                    <div class="d-flex align-items-baseline gap-3">
+                        <span class="display-6 fw-bold text-dark" id="displayCurrentPrice">
+                            @((Model.SelectedVariant != null && Model.SelectedVariant.SalePrice.HasValue && Model.SelectedVariant.SalePrice.Value > 0 ? Model.SelectedVariant.SalePrice.Value : (Model.SelectedVariant != null ? Model.SelectedVariant.Price : 0)).ToString("N0")) ₫
+                        </span>
+                        <span class="fs-5 text-muted text-decoration-line-through @(Model.SelectedVariant != null && Model.SelectedVariant.SalePrice.HasValue ? "" : "d-none")" id="displayOriginalPrice">
+                            @(Model.SelectedVariant != null ? Model.SelectedVariant.Price.ToString("N0") : "0") ₫
+                        </span>
+                        <span class="badge bg-danger px-2 py-1 small @(Model.SelectedVariant != null && Model.SelectedVariant.SalePrice.HasValue ? "" : "d-none")" id="displayDiscountBadge">
+                            GIẢM GIÁ
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Attributes Row -->
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    @if (!string.IsNullOrEmpty(Model.Product.Gender))
+                    {
+                        <span class="badge bg-light text-dark border px-3 py-2">
+                            <i class="bi bi-gender-ambiguous me-1"></i> Giới tính: @Model.Product.Gender
+                        </span>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Product.Concentration))
+                    {
+                        <span class="badge bg-light text-dark border px-3 py-2">
+                            <i class="bi bi-droplet-half me-1"></i> Nồng độ: @Model.Product.Concentration
+                        </span>
+                    }
+                    <span class="badge bg-light text-dark border px-3 py-2">
+                        <i class="bi bi-globe me-1"></i> Xuất xứ: @(string.IsNullOrEmpty(Model.Product.Brand.Country) ? "Pháp" : Model.Product.Brand.Country)
+                    </span>
+                </div>
+
+                <!-- Variant Selector (Dung tích: 30ml, 50ml, 100ml...) -->
+                <div class="mb-4">
+                    <label class="fw-bold small text-uppercase letter-spacing-1 mb-2 d-block">
+                        Chọn dung tích: <span id="selectedVolumeText" class="text-muted fw-normal">@(Model.SelectedVariant != null ? Model.SelectedVariant.VolumeML + "ml" : "")</span>
+                    </label>
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach (var variant in Model.Variants)
+                        {
+                            var hasSale = variant.SalePrice.HasValue && variant.SalePrice.Value > 0;
+                            var currentP = hasSale ? variant.SalePrice.Value : variant.Price;
+                            <button type="button" 
+                                    class="variant-btn @(variant.VariantID == Model.SelectedVariant.VariantID ? "active" : "")"
+                                    data-variant-id="@variant.VariantID"
+                                    data-volume="@variant.VolumeML"
+                                    data-price="@variant.Price"
+                                    data-sale="@(variant.SalePrice ?? 0)"
+                                    data-stock="@variant.StockQuantity"
+                                    data-sku="@variant.SKU"
+                                    onclick="selectVariant(this)">
+                                @variant.VolumeML ml
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <!-- Stock Status -->
+                <div class="mb-4 small">
+                    <span class="fw-semibold">Tình trạng:</span>
+                    <span id="stockStatusText" class="text-success fw-bold ms-1">
+                        @(Model.SelectedVariant != null && Model.SelectedVariant.StockQuantity > 0 ? "Còn hàng (" + Model.SelectedVariant.StockQuantity + " sản phẩm có sẵn)" : "Tạm hết hàng")
+                    </span>
+                </div>
+
+                <!-- Quantity & Actions -->
+                <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
+                    <div class="quantity-control">
+                        <button type="button" class="quantity-btn" onclick="changeQuantity(-1)"><i class="bi bi-dash"></i></button>
+                        <input type="number" id="purchaseQuantity" class="quantity-input" value="1" min="1" max="99" />
+                        <button type="button" class="quantity-btn" onclick="changeQuantity(1)"><i class="bi bi-plus"></i></button>
+                    </div>
+
+                    <button type="button" class="btn btn-luxury-dark px-4 py-3 flex-grow-1" id="btnAddToCart" onclick="onAddToCartClick()">
+                        <i class="bi bi-bag-plus me-2"></i> Thêm vào giỏ hàng
+                    </button>
+
+                    <button type="button" class="btn btn-luxury-gold px-4 py-3" onclick="onBuyNowClick()">
+                        Mua ngay
+                    </button>
+
+                    <button type="button" class="btn btn-outline-secondary p-3" title="Thêm vào yêu thích" onclick="toggleWishlist(this, @Model.Product.ProductID)">
+                        <i class="bi bi-heart"></i>
+                    </button>
+                </div>
+
+                <!-- Store Assurances -->
+                <div class="border-top pt-4 mt-4">
+                    <div class="row g-3 small text-muted">
+                        <div class="col-6 d-flex align-items-center gap-2">
+                            <i class="bi bi-patch-check-fill text-gold fs-5"></i>
+                            <span>100% Chính Hãng Nhập Khẩu</span>
+                        </div>
+                        <div class="col-6 d-flex align-items-center gap-2">
+                            <i class="bi bi-truck text-gold fs-5"></i>
+                            <span>Giao hàng toàn quốc</span>
+                        </div>
+                        <div class="col-6 d-flex align-items-center gap-2">
+                            <i class="bi bi-arrow-counterclockwise text-gold fs-5"></i>
+                            <span>Đổi trả 7 ngày nguyên seal</span>
+                        </div>
+                        <div class="col-6 d-flex align-items-center gap-2">
+                            <i class="bi bi-gift text-gold fs-5"></i>
+                            <span>Đóng gói hộp quà cao cấp</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         DESCRIPTION, DETAILS & REVIEWS TABS
+         ========================================== -->
+    <div class="mt-5 pt-5 border-top">
+        <ul class="nav nav-tabs justify-content-center border-bottom mb-4" id="productTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active font-serif fs-5 px-4 pb-3" id="desc-tab" data-bs-toggle="tab" data-bs-target="#desc" type="button" role="tab">
+                    Mô Tả Sản Phẩm
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link font-serif fs-5 px-4 pb-3" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab">
+                    Thông Tin Chi Tiết
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link font-serif fs-5 px-4 pb-3" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab">
+                    Đánh Giá (@Model.ReviewCount)
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content py-4" id="productTabsContent">
+            <!-- Tab 1: Description -->
+            <div class="tab-pane fade show active" id="desc" role="tabpanel">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="lh-lg text-secondary">
+                            @if (!string.IsNullOrEmpty(Model.Product.Description))
+                            {
+                                @Html.Raw(Model.Product.Description.Replace("\n", "<br/>"))
+                            }
+                            else
+                            {
+                                <p>Sản phẩm nước hoa cao cấp chính hãng từ thương hiệu <strong>@Model.Product.Brand.BrandName</strong>. Được tinh chế với công thức chuẩn mực, mang đến độ lưu hương và tỏa hương ấn tượng, tôn vinh nét quyến rũ và dấu ấn cá nhân của bạn.</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Details -->
+            <div class="tab-pane fade" id="details" role="tabpanel">
+                <div class="row justify-content-center">
+                    <div class="col-lg-6">
+                        <table class="table table-bordered small">
+                            <tbody>
+                                <tr>
+                                    <th class="bg-light" style="width: 35%;">Thương hiệu</th>
+                                    <td>@Model.Product.Brand.BrandName</td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">Xuất xứ</th>
+                                    <td>@(string.IsNullOrEmpty(Model.Product.Brand.Country) ? "Pháp" : Model.Product.Brand.Country)</td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">Danh mục</th>
+                                    <td>@Model.Product.Category.CategoryName</td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">Giới tính</th>
+                                    <td>@Model.Product.Gender</td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">Nồng độ</th>
+                                    <td>@Model.Product.Concentration</td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">Các dung tích</th>
+                                    <td>@string.Join(", ", Model.Variants.Select(v => v.VolumeML + "ml"))</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Reviews -->
+            <div class="tab-pane fade" id="reviews" role="tabpanel">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <!-- Review Form -->
+                        <div class="p-4 bg-light rounded-1 mb-5">
+                            <h5 class="font-serif mb-3">Gửi đánh giá của bạn</h5>
+                            <form id="reviewForm" onsubmit="submitProductReview(event)">
+                                <input type="hidden" name="productId" value="@Model.Product.ProductID" />
+                                <div class="mb-3">
+                                    <label class="small fw-semibold mb-1">Mức độ hài lòng:</label>
+                                    <select name="rating" class="form-select form-select-sm" style="width: auto;">
+                                        <option value="5">⭐⭐⭐⭐⭐ (5 sao - Tuyệt vời)</option>
+                                        <option value="4">⭐⭐⭐⭐ (4 sao - Rất tốt)</option>
+                                        <option value="3">⭐⭐⭐ (3 sao - Bình thường)</option>
+                                        <option value="2">⭐⭐ (2 sao - Chưa hài lòng)</option>
+                                        <option value="1">⭐ (1 sao - Kém)</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="small fw-semibold mb-1">Cảm nhận về mùi hương & độ lưu hương:</label>
+                                    <textarea name="comment" class="form-control" rows="3" placeholder="Chia sẻ cảm nhận chân thực của bạn..." required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-luxury-dark py-2 px-4">Gửi Đánh Giá</button>
+                            </form>
+                        </div>
+
+                        <!-- Reviews List -->
+                        <div class="reviews-list">
+                            @if (Model.Reviews.Any())
+                            {
+                                foreach (var rev in Model.Reviews)
+                                {
+                                    <div class="border-bottom pb-3 mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="fw-bold">@rev.User.FullName</span>
+                                            <span class="text-muted small">@rev.CreatedAt.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                        <div class="text-warning small mb-2">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <i class="bi @(i <= rev.Rating ? "bi-star-fill" : "bi-star")"></i>
+                                            }
+                                        </div>
+                                        <p class="text-secondary small mb-0">@rev.Comment</p>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-center text-muted py-3">Chưa có đánh giá nào cho sản phẩm này. Hãy là người đầu tiên chia sẻ cảm nhận!</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         RELATED PRODUCTS
+         ========================================== -->
+    @if (Model.RelatedProducts.Any())
+    {
+        <div class="mt-5 pt-5 border-top">
+            <div class="d-flex justify-content-between align-items-end mb-4">
+                <div>
+                    <span class="section-subtitle text-start">Gợi Ý Cho Bạn</span>
+                    <h2 class="section-title mb-0">Sản Phẩm Tương Tự</h2>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                @foreach (var rel in Model.RelatedProducts)
+                {
+                    <div class="col-xl-3 col-lg-4 col-md-6">
+                        @Html.Partial("_ProductCard", rel)
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@section scripts {
+    <script>
+        let currentVariantId = @(Model.SelectedVariant != null ? Model.SelectedVariant.VariantID : 0);
+
+        function switchGalleryImage(el, src) {
+            document.querySelectorAll('.gallery-thumb-item').forEach(e => e.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('mainProductImage').src = src;
+        }
+
+        function selectVariant(btn) {
+            document.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            currentVariantId = parseInt(btn.getAttribute('data-variant-id'));
+            const volume = btn.getAttribute('data-volume');
+            const price = parseFloat(btn.getAttribute('data-price'));
+            const sale = parseFloat(btn.getAttribute('data-sale'));
+            const stock = parseInt(btn.getAttribute('data-stock'));
+            const sku = btn.getAttribute('data-sku');
+
+            document.getElementById('selectedVolumeText').textContent = volume + 'ml';
+            document.getElementById('displaySku').textContent = sku;
+
+            if (sale > 0 && sale < price) {
+                document.getElementById('displayCurrentPrice').textContent = sale.toLocaleString('vi-VN') + ' ₫';
+                document.getElementById('displayOriginalPrice').textContent = price.toLocaleString('vi-VN') + ' ₫';
+                document.getElementById('displayOriginalPrice').classList.remove('d-none');
+                document.getElementById('displayDiscountBadge').classList.remove('d-none');
+            } else {
+                document.getElementById('displayCurrentPrice').textContent = price.toLocaleString('vi-VN') + ' ₫';
+                document.getElementById('displayOriginalPrice').classList.add('d-none');
+                document.getElementById('displayDiscountBadge').classList.add('d-none');
+            }
+
+            const stockText = document.getElementById('stockStatusText');
+            const btnAdd = document.getElementById('btnAddToCart');
+            if (stock > 0) {
+                stockText.textContent = `Còn hàng (${stock} sản phẩm có sẵn)`;
+                stockText.className = 'text-success fw-bold ms-1';
+                btnAdd.disabled = false;
+            } else {
+                stockText.textContent = 'Tạm hết hàng';
+                stockText.className = 'text-danger fw-bold ms-1';
+                btnAdd.disabled = true;
+            }
+        }
+
+        function changeQuantity(delta) {
+            const input = document.getElementById('purchaseQuantity');
+            let val = parseInt(input.value) || 1;
+            val = Math.max(1, Math.min(99, val + delta));
+            input.value = val;
+        }
+
+        function onAddToCartClick() {
+            const qty = parseInt(document.getElementById('purchaseQuantity').value) || 1;
+            quickAddToCart(currentVariantId, qty);
+        }
+
+        function onBuyNowClick() {
+            const qty = parseInt(document.getElementById('purchaseQuantity').value) || 1;
+            $.post('@Url.Action("AddToCart", "Cart")', { variantId: currentVariantId, quantity: qty }, function(res) {
+                if (res && res.success) {
+                    window.location.href = '@Url.Action("Index", "Checkout")';
+                } else {
+                    showToast(res ? res.message : 'Có lỗi xảy ra', 'error');
+                }
+            });
+        }
+
+        function submitProductReview(e) {
+            e.preventDefault();
+            const form = $(e.target);
+            $.post('@Url.Action("AddReview", "Products")', form.serialize(), function (res) {
+                if (res && res.success) {
+                    showToast(res.message);
+                    setTimeout(() => location.reload(), 1200);
+                } else {
+                    showToast(res ? res.message : 'Vui lòng thử lại', 'error');
+                }
+            });
+        }
+    </script>
+}
+

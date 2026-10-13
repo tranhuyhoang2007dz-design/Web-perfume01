@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="100%" height="100%">
+  <defs>
+    <linearGradient id="luxuryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1A1A1A"/>
+      <stop offset="50%" stop-color="#2D2820"/>
+      <stop offset="100%" stop-color="#121212"/>
+    </linearGradient>
+    <radialGradient id="goldGlow" cx="60%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#C2A26B" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#121212" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1000" height="700" fill="url(#luxuryGrad)"/>
+  <circle cx="650" cy="350" r="350" fill="url(#goldGlow)"/>
+  <!-- Artistic Silhouette of Perfume Bottles -->
+  <g transform="translate(560, 120)" opacity="0.9">
+    <!-- Tall Sleek Bottle -->
+    <rect x="140" y="50" width="60" height="50" rx="4" fill="#0D0D0D" stroke="#C2A26B" stroke-width="2"/>
+    <rect x="120" y="100" width="100" height="320" rx="10" fill="#181818" stroke="#C2A26B" stroke-width="2"/>
+    <rect x="135" y="160" width="70" height="110" rx="3" fill="#252525" stroke="#8E7345" stroke-width="1"/>
+    <!-- Glass Highlights -->
+    <line x1="130" y1="120" x2="130" y2="400" stroke="#FFFFFF" stroke-opacity="0.2" stroke-width="4"/>
+    <line x1="210" y1="120" x2="210" y2="400" stroke="#FFFFFF" stroke-opacity="0.1" stroke-width="2"/>
+  </g>
+  <g transform="translate(420, 220)" opacity="0.8">
+    <!-- Square Luxury Bottle -->
+    <rect x="80" y="40" width="70" height="40" rx="3" fill="#1C1C1C" stroke="#C2A26B" stroke-width="2"/>
+    <rect x="50" y="80" width="130" height="200" rx="6" fill="#22201D" stroke="#C2A26B" stroke-width="2"/>
+    <rect x="70" y="120" width="90" height="80" rx="2" fill="#171614" stroke="#8E7345" stroke-width="1"/>
+    <!-- Glass Highlights -->
+    <line x1="60" y1="95" x2="60" y2="265" stroke="#FFFFFF" stroke-opacity="0.25" stroke-width="3"/>
+  </g>
+</svg>
+

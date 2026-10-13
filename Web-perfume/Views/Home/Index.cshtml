@@ -1,0 +1,262 @@
+﻿@model Web_perfume.Models.HomeViewModel
+@{
+    ViewBag.Title = "Trang Chủ";
+}
+
+<!-- ==========================================
+     SECTION 1: HERO BANNER
+     ========================================== -->
+<section class="hero-section">
+    <div class="container position-relative">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <div class="hero-content">
+                    <span class="hero-subtitle">Tinh Tuyển Hương Sắc Pháp & Ý</span>
+                    <h1 class="hero-title">Khám Phá Bản Lĩnh & Dấu Ấn Mùi Hương Của Bạn</h1>
+                    <p class="hero-description">
+                        Bộ sưu tập những dòng nước hoa kinh điển và sáng tạo nhất từ Chanel, Dior, Creed, Tom Ford. Đem đến sự tinh tế, quyến rũ và đẳng cấp vượt thời gian.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="@Url.Action("Index", "Products")" class="btn btn-luxury-gold">
+                            Khám Phá Bộ Sưu Tập <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                        <a href="@Url.Action("Index", "Brands")" class="btn btn-luxury-outline text-white border-white">
+                            Khám Phá Thương Hiệu
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="hero-bg-visual" style="background-image: url('/Content/images/hero-perfume.svg');"></div>
+</section>
+
+<!-- ==========================================
+     SECTION 2: DANH MỤC NỔI BẬT
+     ========================================== -->
+<section class="section-padding bg-white">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-subtitle">Phân Khúc Mùi Hương</span>
+            <h2 class="section-title">Danh Mục Nổi Bật</h2>
+            <p class="section-desc">Lựa chọn nốt hương hoàn hảo định hình phong cách cá nhân riêng biệt của bạn.</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <a href="@Url.Action("Index", "Products", new { gender = "Men" })" class="category-tile">
+                    <img src="https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=700&q=80" 
+                         alt="Nước hoa Nam" 
+                         onerror="this.src='/Content/images/placeholder-perfume.svg'" />
+                    <div class="category-tile-overlay">
+                        <h3 class="category-tile-name">Nước Hoa Nam</h3>
+                        <span class="category-tile-link">Khám phá ngay <i class="bi bi-arrow-right"></i></span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-4">
+                <a href="@Url.Action("Index", "Products", new { gender = "Women" })" class="category-tile">
+                    <img src="https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=700&q=80" 
+                         alt="Nước hoa Nữ" 
+                         onerror="this.src='/Content/images/placeholder-perfume.svg'" />
+                    <div class="category-tile-overlay">
+                        <h3 class="category-tile-name">Nước Hoa Nữ</h3>
+                        <span class="category-tile-link">Khám phá ngay <i class="bi bi-arrow-right"></i></span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-4">
+                <a href="@Url.Action("Index", "Products", new { gender = "Unisex" })" class="category-tile">
+                    <img src="https://images.unsplash.com/photo-1616949755610-8c9bbc08f138?auto=format&fit=crop&w=700&q=80" 
+                         alt="Nước hoa Unisex" 
+                         onerror="this.src='/Content/images/placeholder-perfume.svg'" />
+                    <div class="category-tile-overlay">
+                        <h3 class="category-tile-name">Nước Hoa Unisex</h3>
+                        <span class="category-tile-link">Khám phá ngay <i class="bi bi-arrow-right"></i></span>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==========================================
+     SECTION 3: SẢN PHẨM NỔI BẬT
+     ========================================== -->
+<section class="section-padding" style="background-color: var(--color-bg-alt);">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-end mb-4">
+            <div>
+                <span class="section-subtitle text-start">Bộ Sưu Tập Tiêu Biểu</span>
+                <h2 class="section-title mb-0">Sản Phẩm Nổi Bật</h2>
+            </div>
+            <a href="@Url.Action("Index", "Products")" class="btn btn-luxury-outline">
+                Xem tất cả (@Model.FeaturedProducts.Count) <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+
+        <div class="row g-4">
+            @if (Model.FeaturedProducts.Any())
+            {
+                foreach (var product in Model.FeaturedProducts.Take(8))
+                {
+                    <div class="col-xl-3 col-lg-4 col-md-6">
+                        @Html.Partial("_ProductCard", product)
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center py-5">
+                    <p class="text-muted">Chưa có sản phẩm nổi bật nào trong hệ thống.</p>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- ==========================================
+     SECTION 4: THƯƠNG HIỆU NỔI BẬT (Từ DB)
+     ========================================== -->
+<section class="section-padding bg-white">
+    <div class="container">
+        <div class="section-header">
+            <span class="section-subtitle">Nhà Sáng Chế Hương Thơm</span>
+            <h2 class="section-title">Thương Hiệu Nổi Bật</h2>
+            <p class="section-desc">Hợp tác trực tiếp cùng những thương hiệu chế tác nước hoa lừng danh quốc tế.</p>
+        </div>
+
+        <div class="row g-3">
+            @foreach (var brand in Model.FeaturedBrands)
+            {
+                <div class="col-lg-3 col-md-4 col-6">
+                    <a href="@Url.Action("Detail", "Brands", new { id = brand.BrandID })" class="brand-box">
+                        <div class="brand-box-name">@brand.BrandName</div>
+                        <div class="brand-box-origin">@(string.IsNullOrEmpty(brand.Country) ? "Pháp" : brand.Country)</div>
+                    </a>
+                </div>
+            }
+        </div>
+
+        <div class="text-center mt-5">
+            <a href="@Url.Action("Index", "Brands")" class="btn btn-luxury-outline">
+                Xem tất cả thương hiệu <i class="bi bi-chevron-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ==========================================
+     SECTION 5: BANNER KHUYẾN MÃI
+     ========================================== -->
+<section class="promo-strip">
+    <div class="container">
+        <div class="row align-items-center justify-content-between">
+            <div class="col-lg-8 mb-4 mb-lg-0">
+                <span class="badge bg-dark text-white px-3 py-2 text-uppercase mb-3">Ưu Đãi Đặc Biệt Tháng Này</span>
+                <h2 class="font-serif display-6 mb-2">Giảm Giá Lên Đến 30% Dòng Nước Hoa Nữ & Unisex</h2>
+                <p class="text-muted mb-0">Áp dụng cho các dòng Eau De Parfum chọn lọc. Nhập mã voucher ưu đãi tại bước thanh toán để nhận thêm quà tặng cao cấp.</p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <a href="@Url.Action("Index", "Products", new { sort = "sale" })" class="btn btn-luxury-dark btn-lg">
+                    Khám Phá Ưu Đãi <i class="bi bi-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ==========================================
+     SECTION 6: NEW ARRIVALS (Sản phẩm mới)
+     ========================================== -->
+<section class="section-padding bg-white">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-end mb-4">
+            <div>
+                <span class="section-subtitle text-start">Bộ Sưu Tập Mới Nhất</span>
+                <h2 class="section-title mb-0">Hương Thơm Mới Về</h2>
+            </div>
+            <a href="@Url.Action("Index", "Products", new { sort = "newest" })" class="btn btn-luxury-outline">
+                Xem Thêm <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+
+        <div class="row g-4">
+            @foreach (var product in Model.NewArrivals.Take(4))
+            {
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    @Html.Partial("_ProductCard", product)
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- ==========================================
+     SECTION 7: BEST SELLERS (Bán chạy)
+     ========================================== -->
+@if (Model.BestSellers.Any())
+{
+    <section class="section-padding" style="background-color: var(--color-bg-alt);">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-subtitle">Được Yêu Thích Nhất</span>
+                <h2 class="section-title">Sản Phẩm Bán Chạy</h2>
+                <p class="section-desc">Những nốt hương quyến rũ được săn đón nhiều nhất từ khách hàng tinh tế của Mona Perfume.</p>
+            </div>
+
+            <div class="row g-4">
+                @foreach (var product in Model.BestSellers)
+                {
+                    <div class="col-xl-3 col-lg-4 col-md-6">
+                        @Html.Partial("_ProductCard", product)
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<!-- ==========================================
+     SECTION 8: WHY CHOOSE US
+     ========================================== -->
+<section class="section-padding bg-white border-top border-bottom">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-3 col-6">
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
+                    <h4 class="feature-title">100% Chính Hãng</h4>
+                    <p class="feature-desc">Cam kết bồi hoàn 200% nếu phát hiện sản phẩm không chuẩn chất lượng.</p>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-6">
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="bi bi-truck"></i></div>
+                    <h4 class="feature-title">Giao Hàng Hỏa Tốc</h4>
+                    <p class="feature-desc">Miễn phí vận chuyển cho đơn hàng từ 1.000.000₫ trên toàn quốc.</p>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-6">
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="bi bi-arrow-repeat"></i></div>
+                    <h4 class="feature-title">Đổi Trả Dễ Dàng</h4>
+                    <p class="feature-desc">Hỗ trợ đổi trả miễn phí trong vòng 7 ngày nếu còn nguyên tem niêm phong.</p>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-6">
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="bi bi-stars"></i></div>
+                    <h4 class="feature-title">Tư Vấn Mùi Hương</h4>
+                    <p class="feature-desc">Đội ngũ chuyên gia mùi hương đồng hành tìm ra chai nước hoa phù hợp nhất.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</main>

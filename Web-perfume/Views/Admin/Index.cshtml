@@ -1,0 +1,134 @@
+﻿@model Web_perfume.Models.AdminDashboardViewModel
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.Title = "Bảng Điều Khiển Quản Trị";
+}
+
+<!-- Stat Cards Row -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted small text-uppercase fw-semibold">Tổng Nước Hoa</span>
+                <span class="fs-4 text-primary"><i class="bi bi-droplet"></i></span>
+            </div>
+            <div class="display-6 fw-bold text-dark">@Model.TotalProducts</div>
+            <a href="@Url.Action("Products", "Admin")" class="small text-primary text-decoration-none mt-2 d-inline-block">
+                Xem chi tiết <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted small text-uppercase fw-semibold">Thương Hiệu</span>
+                <span class="fs-4 text-warning"><i class="bi bi-tag"></i></span>
+            </div>
+            <div class="display-6 fw-bold text-dark">@Model.TotalBrands</div>
+            <a href="@Url.Action("Brands", "Admin")" class="small text-warning text-decoration-none mt-2 d-inline-block">
+                Xem chi tiết <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted small text-uppercase fw-semibold">Đơn Hàng</span>
+                <span class="fs-4 text-info"><i class="bi bi-receipt"></i></span>
+            </div>
+            <div class="display-6 fw-bold text-dark">@Model.TotalOrders</div>
+            <div class="small text-muted mt-2">
+                Chờ xử lý: <strong class="text-danger">@Model.PendingOrdersCount</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted small text-uppercase fw-semibold">Tổng Doanh Thu</span>
+                <span class="fs-4 text-success"><i class="bi bi-cash-coin"></i></span>
+            </div>
+            <div class="h3 fw-bold text-success mb-1">@Model.TotalRevenue.ToString("N0") ₫</div>
+            <div class="small text-muted">Dữ liệu từ toàn bộ đơn hàng</div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Orders & Quick Actions -->
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card border border-light-subtle rounded-0 bg-white p-4 shadow-none">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                <h5 class="font-serif mb-0">Đơn Hàng Gần Đây</h5>
+                <a href="@Url.Action("Orders", "Admin")" class="small text-primary">Xem tất cả</a>
+            </div>
+
+            @if (Model.RecentOrders.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table align-middle small mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Mã đơn</th>
+                                <th>Khách hàng</th>
+                                <th>Ngày đặt</th>
+                                <th>Tổng tiền</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var o in Model.RecentOrders)
+                            {
+                                <tr>
+                                    <td><strong>#@o.OrderCode</strong></td>
+                                    <td>@o.ReceiverName</td>
+                                    <td>@o.OrderDate.ToString("dd/MM/yyyy")</td>
+                                    <td class="fw-bold">@o.TotalAmount.ToString("N0") ₫</td>
+                                    <td>
+                                        @if (o.OrderStatus == "Delivered")
+                                        {
+                                            <span class="badge bg-success">Đã giao</span>
+                                        }
+                                        else if (o.OrderStatus == "Processing")
+                                        {
+                                            <span class="badge bg-info text-dark">Đang xử lý</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">@o.OrderStatus</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted small py-3 mb-0 text-center">Chưa có đơn hàng nào trong hệ thống.</p>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card border border-light-subtle rounded-0 bg-white p-4 shadow-none mb-4">
+            <h5 class="font-serif mb-3 pb-2 border-bottom">Thao Tác Nhanh</h5>
+            <div class="d-grid gap-2">
+                <a href="@Url.Action("CreateProduct", "Admin")" class="btn btn-luxury-dark text-center py-2">
+                    <i class="bi bi-plus-circle me-1"></i> Thêm Nước Hoa Mới
+                </a>
+                <a href="@Url.Action("Brands", "Admin")" class="btn btn-luxury-outline text-center py-2">
+                    <i class="bi bi-tag me-1"></i> Quản Lý Thương Hiệu
+                </a>
+                <a href="@Url.Action("Categories", "Admin")" class="btn btn-luxury-outline text-center py-2">
+                    <i class="bi bi-grid me-1"></i> Quản Lý Danh Mục
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+

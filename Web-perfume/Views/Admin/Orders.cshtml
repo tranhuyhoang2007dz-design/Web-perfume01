@@ -1,0 +1,72 @@
+﻿@model List<Web_perfume.Models.Order>
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.Title = "Quản Lý Đơn Hàng";
+}
+
+<div class="card border border-light-subtle rounded-0 bg-white p-4 shadow-none">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h5 class="font-serif mb-1">Toàn Bộ Đơn Hàng Khách Hàng (@Model.Count)</h5>
+            <span class="text-muted small">Cập nhật tiến độ xử lý và thanh toán</span>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle small table-hover mb-0">
+            <thead class="bg-light text-uppercase">
+                <tr>
+                    <th>Mã đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Điện thoại</th>
+                    <th>Địa chỉ nhận hàng</th>
+                    <th>Ngày đặt</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái đơn</th>
+                    <th>Thanh toán</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var o in Model)
+                {
+                    <tr>
+                        <td><strong>#@o.OrderCode</strong></td>
+                        <td>@o.ReceiverName</td>
+                        <td>@o.ReceiverPhone</td>
+                        <td class="text-truncate" style="max-width: 200px;" title="@o.ShippingAddress">@o.ShippingAddress</td>
+                        <td>@o.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td class="fw-bold text-dark">@o.TotalAmount.ToString("N0") ₫</td>
+                        <td>
+                            <select class="form-select form-select-sm" style="width: auto;" onchange="updateStatus(@o.OrderID, this.value)">
+                                <option value="Pending" @(o.OrderStatus == "Pending" ? "selected" : "")>Chờ duyệt (Pending)</option>
+                                <option value="Processing" @(o.OrderStatus == "Processing" ? "selected" : "")>Đang đóng gói (Processing)</option>
+                                <option value="Delivered" @(o.OrderStatus == "Delivered" ? "selected" : "")>Đã giao (Delivered)</option>
+                                <option value="Cancelled" @(o.OrderStatus == "Cancelled" ? "selected" : "")>Hủy đơn (Cancelled)</option>
+                            </select>
+                        </td>
+                        <td>
+                            <span class="badge @(o.PaymentStatus == "Paid" ? "bg-success" : "bg-warning text-dark")">
+                                @o.PaymentStatus
+                            </span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        function updateStatus(orderId, status) {
+            $.post('@Url.Action("UpdateOrderStatus", "Admin")', { orderId: orderId, status: status }, function (res) {
+                if (res && res.success) {
+                    alert('Cập nhật trạng thái đơn hàng thành công!');
+                } else {
+                    alert('Lỗi cập nhật trạng thái đơn hàng.');
+                }
+            });
+        }
+    </script>
+}
+

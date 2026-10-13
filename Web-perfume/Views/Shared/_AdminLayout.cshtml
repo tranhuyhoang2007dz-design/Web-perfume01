@@ -1,0 +1,95 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@(ViewBag.Title != null ? ViewBag.Title + " | " : "")Admin AURA PARFUMS</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 & Icons -->
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="~/Content/luxury-style.css" rel="stylesheet" />
+
+    <style>
+        body { background-color: #F8F9FA; }
+        .admin-sidebar { min-height: 100vh; background-color: #121212; width: 250px; position: fixed; top: 0; left: 0; z-index: 100; }
+        .admin-main { margin-left: 250px; padding: 30px; min-height: 100vh; }
+        .admin-nav-link { display: flex; align-items: center; gap: 12px; color: #A0A0A0; padding: 12px 24px; font-size: 13.5px; font-weight: 500; transition: all 0.2s; text-decoration: none; }
+        .admin-nav-link:hover, .admin-nav-link.active { color: #FFFFFF; background-color: rgba(255, 255, 255, 0.08); border-left: 3px solid #C2A26B; }
+        .stat-card { background: #FFFFFF; border: 1px solid #EBEBEB; padding: 22px; border-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+        @@media (max-width: 991px) {
+            .admin-sidebar { position: static; width: 100%; min-height: auto; }
+            .admin-main { margin-left: 0; padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="d-flex flex-column flex-lg-row">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar py-3">
+            <div class="px-4 py-3 mb-2 border-bottom border-dark">
+                <a href="@Url.Action("Index", "Admin")" class="text-white text-decoration-none font-serif fs-5 fw-bold letter-spacing-1">
+                    AURA <span class="text-warning">ADMIN</span>
+                </a>
+                <div class="small text-secondary mt-1">Hệ thống quản trị bán hàng</div>
+            </div>
+
+            <nav class="nav flex-column">
+                <a href="@Url.Action("Index", "Admin")" class="admin-nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Index" ? "active" : "")">
+                    <i class="bi bi-speedometer2"></i> Tổng quan
+                </a>
+                <a href="@Url.Action("Products", "Admin")" class="admin-nav-link @(ViewContext.RouteData.Values["action"].ToString().Contains("Product") ? "active" : "")">
+                    <i class="bi bi-droplet"></i> Quản lý Nước hoa
+                </a>
+                <a href="@Url.Action("Brands", "Admin")" class="admin-nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Brands" ? "active" : "")">
+                    <i class="bi bi-tag"></i> Thương hiệu
+                </a>
+                <a href="@Url.Action("Categories", "Admin")" class="admin-nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Categories" ? "active" : "")">
+                    <i class="bi bi-grid"></i> Danh mục
+                </a>
+                <a href="@Url.Action("Orders", "Admin")" class="admin-nav-link @(ViewContext.RouteData.Values["action"].ToString() == "Orders" ? "active" : "")">
+                    <i class="bi bi-receipt"></i> Đơn hàng
+                </a>
+                <hr class="border-secondary my-2 mx-3">
+                <a href="@Url.Action("Index", "Home")" target="_blank" class="admin-nav-link text-warning">
+                    <i class="bi bi-box-arrow-up-right"></i> Xem trang bán hàng
+                </a>
+                <a href="@Url.Action("Logout", "Account")" class="admin-nav-link text-danger">
+                    <i class="bi bi-box-arrow-right"></i> Đăng xuất
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="admin-main flex-grow-1">
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom bg-white p-3 rounded-1 shadow-sm">
+                <h4 class="font-serif mb-0 text-dark">@ViewBag.Title</h4>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="small text-muted">Quản trị viên: <strong>Admin</strong></span>
+                    <a href="@Url.Action("Logout", "Account")" class="btn btn-outline-danger btn-sm">Đăng xuất</a>
+                </div>
+            </div>
+
+            @if (TempData["AdminSuccess"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>@TempData["AdminSuccess"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/Scripts/jquery-3.7.0.min.js"></script>
+    <script src="~/Scripts/bootstrap.bundle.min.js"></script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>
+
