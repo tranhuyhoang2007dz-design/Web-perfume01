@@ -1,4 +1,4 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    PERFUME LUXURY E-COMMERCE DESIGN SYSTEM
    Inspired by: Dior Beauty, Chanel, Sephora, Jo Malone
    Style: Premium Luxury + Minimal + Modern
@@ -91,16 +91,38 @@ a:hover {
     transition: all var(--transition-smooth);
 }
 
-.brand-logo {
-    font-family: var(--font-serif);
-    font-size: 26px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    color: var(--color-noir);
-    text-transform: uppercase;
+
+
+/* Styling cho Logo hình tròn sang trọng */
+.brand-logo-wrapper {
     display: inline-block;
-    padding: 12px 0;
+    text-decoration: none;
 }
+
+.brand-logo-img {
+    width: 150px; /* Chiều rộng logo */
+    height: 150px; /* Chiều cao logo */
+    border-radius: 50%;  /*Bắt buộc 50% để biến ảnh thành hình tròn hoàn hảo */
+    object-fit: cover; /* Giữ tỉ lệ hình ảnh không bị móp méo */
+    border: 2px solid #c9a063; /* Đường viền màu vàng Gold mỏng tinh tế */
+    padding: 2px; /* Khoảng cách giữa ảnh và viền */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    
+}
+
+    /* Hiệu ứng khi rê chuột vào Logo */
+    .brand-logo-img:hover {
+        transform: scale(1.08); /* Phóng to nhẹ */
+        box-shadow: 0 0 12px rgba(201, 160, 99, 0.6); /* Phát sáng màu gold nhẹ */
+    }
+
+.brand-logo-img {
+    height: 42px !important;
+    width: auto !important;
+    object-fit: contain !important;
+    mix-blend-mode: multiply !important; /* Lọc bỏ nền xám/ô chữ nhật mờ */
+}
+
 
 .brand-logo span {
     color: var(--color-gold);

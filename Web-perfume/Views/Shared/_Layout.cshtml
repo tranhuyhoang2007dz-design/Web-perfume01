@@ -1,4 +1,4 @@
-﻿@using Web_perfume.Helpers
+@using Web_perfume.Helpers
 @{
     var currentUser = AuthHelper.GetUser(Session);
     var cartCount = 0;
@@ -32,8 +32,16 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <!-- Luxury Theme Styles -->
+    <link href="~/Content/luxury-style.css?v=1.0" rel="stylesheet" />
     <link href="~/Content/luxury-style.css" rel="stylesheet" />
     @RenderSection("styles", required: false)
+    @*<style>
+            .brand-logo-img {
+                width: 120px !important;
+                height: 45px !important;
+                object-fit: contain !important;
+            }
+        </style>*@
 </head>
 <body>
     <!-- Top Announcement -->
@@ -56,9 +64,10 @@
                 </button>
 
                 <!-- Brand Logo -->
-                <a href="@Url.Action("Index", "Home")" class="brand-logo">
-                    MONA<span>.</span>PERFUME
-                </a>
+                <a href="@Url.Action("Index", "Home")" class="brand-logo-wrapper">
+                    <img src="~/Content/images/logo-vespera-transparent.png" alt="Vespera Perfume" class="brand-logo-img"
+                         style="height: 42px !important; width: auto !important; display: block !important;  "  />
+                </a>    
 
                 <!-- Desktop Navigation -->
                 <nav class="d-none d-lg-block">
@@ -99,7 +108,7 @@
                                 }
                                 <li><a class="dropdown-item py-2" href="@Url.Action("Profile", "Account")"><i class="bi bi-person-lines-fill me-2"></i>Tài khoản của tôi</a></li>
                                 <li><a class="dropdown-item py-2" href="@Url.Action("Profile", "Account")#orders"><i class="bi bi-box-seam me-2"></i>Lịch sử đơn hàng</a></li>
-                                <li><hr class="dropdown-divider"></li>
+                                    <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item py-2 text-danger" href="@Url.Action("Logout", "Account")"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
                             }
                             else
@@ -201,7 +210,7 @@
             <div class="row g-4">
                 <!-- Col 1: Brand Info -->
                 <div class="col-lg-4 col-md-6">
-                    <a href="@Url.Action("Index", "Home")" class="footer-logo">MONA<span>.</span>PERFUME</a>
+                    <a href="@Url.Action("Index", "Home")" class="footer-logo">VESPERA<span>.</span>PERFUME</a>
                     <p class="text-secondary pe-lg-4" style="line-height: 1.8;">
                         Không gian hương thơm tinh tuyển hàng đầu. Chúng tôi kết nối bạn với những tuyệt tác nước hoa chính hãng từ những thương hiệu trứ danh thế giới.
                     </p>
@@ -249,7 +258,7 @@
             </div>
 
             <div class="footer-bottom">
-                <div>&copy; @DateTime.Now.Year MONA PERFUME. Đồ án môn học Phát triển Website.</div>
+                <div>&copy; @DateTime.Now.Year VESPERA PERFUME. </div>
                 <div class="d-flex align-items-center gap-3">
                     <span class="badge bg-secondary">Bảo mật SSL</span>
                     <span class="badge bg-secondary">COD Toàn quốc</span>
@@ -262,68 +271,28 @@
     <!-- Toast Container -->
     <div id="toast-container"></div>
 
-    <!-- Scripts -->
+    <!-- Scripts: jQuery và Bootstrap (bắt buộc phải load trước) -->
     <script src="~/Scripts/jquery-3.7.0.min.js"></script>
     <script src="~/Scripts/bootstrap.bundle.min.js"></script>
 
-    <!-- Global Store Interactions -->
+    <!--
+        KHAI BÁO BIẾN URL DÙNG CHUNG CHO JAVASCRIPT-->
+        @*Lý do: File .js thuần không đọc được cú pháp Razor (@Url.Action),*@
+        <!--nên ta khai báo URL ở đây (trong .cshtml) rồi truyền sang file .js qua biến toàn cục.
+        Các file .js chỉ cần đọc SITE_URLS.cartAddUrl, SITE_URLS.checkoutUrl, v.v.
+    -->
     <script>
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'luxury-toast';
-            
-            let icon = '<i class="bi bi-check-circle-fill text-warning"></i>';
-            if (type === 'error') icon = '<i class="bi bi-exclamation-triangle-fill text-danger"></i>';
-
-            toast.innerHTML = `${icon} <span>${message}</span>`;
-            container.appendChild(toast);
-
-            setTimeout(() => toast.classList.add('show'), 50);
-
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 400);
-            }, 3500);
-        }
-
-        function quickAddToCart(variantId, quantity) {
-            $.ajax({
-                url: '@Url.Action("AddToCart", "Cart")',
-                type: 'POST',
-                data: { variantId: variantId, quantity: quantity },
-                success: function (res) {
-                    if (res && res.success) {
-                        $('#cartBadgeCount').text(res.cartCount);
-                        showToast(res.message || 'Đã thêm sản phẩm vào giỏ hàng thành công!');
-                    } else {
-                        showToast(res ? res.message : 'Có lỗi xảy ra, vui lòng thử lại', 'error');
-                    }
-                },
-                error: function () {
-                    showToast('Không thể kết nối đến máy chủ', 'error');
-                }
-            });
-        }
-
-        function toggleWishlist(btn, productId) {
-            $(btn).toggleClass('active');
-            if ($(btn).hasClass('active')) {
-                $(btn).find('i').removeClass('bi-heart').addClass('bi-heart-fill');
-                showToast('Đã thêm vào danh sách yêu thích!');
-            } else {
-                $(btn).find('i').removeClass('bi-heart-fill').addClass('bi-heart');
-                showToast('Đã bỏ khỏi danh sách yêu thích.');
-            }
-        }
-
-        function subscribeNewsletter(e) {
-            e.preventDefault();
-            showToast('Cảm ơn bạn đã đăng ký nhận tin từ MONA PERFUME!');
-            e.target.reset();
-        }
+        var SITE_URLS = {
+            cartAddUrl:   '@Url.Action("AddToCart", "Cart")',
+            checkoutUrl:  '@Url.Action("Index", "Checkout")',
+            addReviewUrl: '@Url.Action("AddReview", "Products")'
+        };
     </script>
 
+    <!-- File JS dùng chung: showToast, quickAddToCart, toggleWishlist, subscribeNewsletter -->
+    <script src="~/Scripts/site-global.js"></script>
+
+    <!-- Phần tử này để các View con chèn thêm script riêng (nếu cần) -->
     @RenderSection("scripts", required: false)
 </body>
 </html>

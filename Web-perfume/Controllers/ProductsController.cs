@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using Web_perfume.Models;
+using System.Data.Entity;
 
 namespace Web_perfume.Controllers
 {
@@ -10,9 +11,9 @@ namespace Web_perfume.Controllers
     {
         private PerfumeShopDBEntities db = new PerfumeShopDBEntities();
 
-        // ==========================================
+        
         // 1. PRODUCT LISTING & FILTERING
-        // ==========================================
+        
         public ActionResult Index(
             string keyword, 
             int? brandId, 
@@ -25,7 +26,12 @@ namespace Web_perfume.Controllers
             int page = 1)
         {
             int pageSize = 9;
-            var query = db.Products.Where(p => p.IsActive);
+            // THÊM CÁC .Include VÀO ĐÂY:
+            var query = db.Products
+                .Include(p => p.ProductImages)
+                .Include(p => p.ProductVariants)
+                .Include(p => p.ProductReviews)
+                .Where(p => p.IsActive);
 
             // 1. Search Keyword (Name or Brand Name)
             if (!string.IsNullOrWhiteSpace(keyword))
@@ -182,16 +188,23 @@ namespace Web_perfume.Controllers
 
             Product product = null;
 
-            // Try find by Slug or ID
+            // Try find by Slug or ID (Đã thêm .Include để kéo theo hình ảnh và biến thể)
             if (int.TryParse(id, out int productId))
             {
-                product = db.Products.FirstOrDefault(p => p.ProductID == productId && p.IsActive);
+                product = db.Products
+                    .Include(p => p.ProductImages)
+                    .Include(p => p.ProductVariants)
+                    .Include(p => p.ProductReviews)
+                    .FirstOrDefault(p => p.ProductID == productId && p.IsActive);
             }
             if (product == null)
             {
-                product = db.Products.FirstOrDefault(p => p.Slug == id && p.IsActive);
+                product = db.Products
+                    .Include(p => p.ProductImages)
+                    .Include(p => p.ProductVariants)
+                    .Include(p => p.ProductReviews)
+                    .FirstOrDefault(p => p.Slug == id && p.IsActive);
             }
-
             if (product == null)
             {
                 return HttpNotFound();
@@ -202,10 +215,14 @@ namespace Web_perfume.Controllers
             var reviews = product.ProductReviews.Where(r => r.IsApproved).OrderByDescending(r => r.CreatedAt).ToList();
 
             // Related Products (same brand or category)
+            // Related Products (sản phẩm liên quan cùng hãng hoặc danh mục)
             var relatedDb = db.Products
+                .Include(p => p.ProductImages)
+                .Include(p => p.ProductVariants)
                 .Where(p => p.IsActive && p.ProductID != product.ProductID && (p.BrandID == product.BrandID || p.CategoryID == product.CategoryID))
                 .Take(4)
                 .ToList();
+
 
             Func<Product, ProductItemViewModel> mapToItem = p =>
             {

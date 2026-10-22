@@ -18,3 +18,19 @@ select,
 textarea {
     max-width: 280px;
 }
+/* Điều chỉnh kích thước logo dạng ngang trên Header */
+.brand-logo-wrapper {
+    display: inline-block;
+    padding: 5px 0;
+}
+
+.brand-logo-img {
+    height: 42px; /* Chiều cao chuẩn nằm gọn trên thanh header */
+    width: auto; /* Tự động co giãn chiều rộng theo tỉ lệ gốc */
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+    .brand-logo-img:hover {
+        transform: scale(1.03); /* Hiệu ứng phóng nhẹ tinh tế khi rê chuột */
+    }

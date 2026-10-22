@@ -2,34 +2,52 @@
 @{
     ViewBag.Title = "Trang Chủ";
 }
+<link href="~/Content/banner-slider.css" rel="stylesheet" />
 
 <!-- ==========================================
      SECTION 1: HERO BANNER
      ========================================== -->
 <section class="hero-section">
-    <div class="container position-relative">
-        <div class="row align-items-center">
-            <div class="col-lg-7">
-                <div class="hero-content">
-                    <span class="hero-subtitle">Tinh Tuyển Hương Sắc Pháp & Ý</span>
-                    <h1 class="hero-title">Khám Phá Bản Lĩnh & Dấu Ấn Mùi Hương Của Bạn</h1>
-                    <p class="hero-description">
-                        Bộ sưu tập những dòng nước hoa kinh điển và sáng tạo nhất từ Chanel, Dior, Creed, Tom Ford. Đem đến sự tinh tế, quyến rũ và đẳng cấp vượt thời gian.
-                    </p>
-                    <div class="d-flex flex-wrap gap-3">
-                        <a href="@Url.Action("Index", "Products")" class="btn btn-luxury-gold">
-                            Khám Phá Bộ Sưu Tập <i class="bi bi-arrow-right ms-1"></i>
-                        </a>
-                        <a href="@Url.Action("Index", "Brands")" class="btn btn-luxury-outline text-white border-white">
-                            Khám Phá Thương Hiệu
-                        </a>
-                    </div>
+
+    <!-- SLIDE 1 -->
+    <div class="my-slide active">
+        <div class="slide-bg" style="background-image: url('/Content/images/banner-1.jpg');">
+            <div class="container h-100 d-flex align-items-center">
+                <div class="slide-text-content">
+                    <span class="sub-title">VESPERA PERFUME</span>
+                    <h1 class="main-title">Khởi Đầu Một Huyền Thoại Hương</h1>
+                    <p class="desc-text">Nơi từng giọt hương chạm vào ký ức, vẽ nên kiệt tác của riêng bạn.</p>
+                    <a href="@Url.Action("Index", "Products")" class="btn-luxury">KHÁM PHÁ NGAY &rarr;</a>
                 </div>
             </div>
         </div>
     </div>
-    <div class="hero-bg-visual" style="background-image: url('/Content/images/hero-perfume.svg');"></div>
+
+    <!-- SLIDE 2 (Ảnh CÓ SẴN CHỮ - Hiển thị nguyên bản, không có khung HTML đè) -->
+    <div class="my-slide">
+        <a href="@Url.Action("Index", "Products")">
+            <img src="/Content/images/banner-2.jpg" alt="Vespera Perfume Premium" class="banner-img-pure" />
+        </a>
+    </div>
+
+    <div class="my-slide">
+        <a href="@Url.Action("Index", "Products")">
+            <img src="~/Content/images/banner-3.jpg" alt="Vespera Perfume Premium" class="banner-img-pure" />
+        </a>
+    </div>
+
+    <div class="my-slide">
+        <a href="@Url.Action("Index", "Products")">
+            <img src="~/Content/images/banner-4.jpg" alt="Vespera Perfume Premium" class="banner-img-pure" />
+        </a>
+    </div>
+
+    <!-- NÚT CHUYỂN SLIDE TRÁI / PHẢI ĐẶT BÊN TRONG SECTION -->
+    <button class="slider-btn prev-btn" onclick="changeSlide(-1)" type="button">&#10094;</button>
+    <button class="slider-btn next-btn" onclick="changeSlide(1)" type="button">&#10095;</button>
+
 </section>
+<script src="~/Content/banner-slider.js"></script>
 
 <!-- ==========================================
      SECTION 2: DANH MỤC NỔI BẬT

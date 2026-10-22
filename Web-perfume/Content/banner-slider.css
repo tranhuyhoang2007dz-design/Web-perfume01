@@ -1,0 +1,176 @@
+﻿/* ================= BANNER SLIDER STYLES (SIÊU MƯỢT MÀ & KHUNG CHỮ TO) ================= */
+.hero-section {
+    position: relative;
+    width: 100%;
+    height: 560px; /* Chiều cao thoáng rộng */
+    overflow: hidden;
+    background-color: #0b0b0b;
+}
+
+/* Style dành riêng cho ảnh có sẵn chữ (Slide 2) */
+.banner-img-pure {
+    width: 100%;
+    height: 560px;
+    object-fit: cover;
+    display: block;
+    /* Hiệu ứng Zoom mượt nhẹ cho slide 2 */
+    transform: scale(1) translate3d(0, 0, 0);
+    will-change: transform;
+    transition: transform 7s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.my-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Chuyển đổi trạng thái bằng opacity thay vì display:none để có animation mượt */
+    opacity: 0;
+    visibility: hidden;
+    will-change: opacity, visibility;
+    transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), visibility 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+}
+
+    .my-slide.active {
+        opacity: 1;
+        visibility: visible;
+        z-index: 2;
+    }
+
+/* Ảnh nền với hiệu ứng phóng to chậm (Ken Burns effect) */
+.slide-bg {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    transform: scale(1) translate3d(0, 0, 0);
+    will-change: transform;
+    transition: transform 7s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Khi slide active: Phóng to ảnh nhẹ 1.08x */
+.my-slide.active .slide-bg,
+.my-slide.active .banner-img-pure {
+    transform: scale(1.08) translate3d(0, 0, 0);
+}
+
+/* Khung container căn chỉnh */
+.hero-section .container {
+    position: relative;
+    z-index: 3;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+/* PHẦN KHUNG CHỨA CHỮ - KẾT HỢP HIỆU ỨNG TRƯỢT TỪ DƯỚI LÊN */
+.slide-text-content {
+    max-width: 650px;
+    color: #fff;
+    padding: 40px 45px;
+    background: rgba(10, 10, 10, 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 12px;
+    border-left: 4px solid #c9a063;
+    /* Hiệu ứng xuất hiện mượt mà cho khối chữ */
+    opacity: 0;
+    transform: translate3d(0, 30px, 0);
+    will-change: transform, opacity;
+    transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s, opacity 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s;
+}
+
+.my-slide.active .slide-text-content {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+}
+
+.slide-text-content .sub-title {
+    font-size: 15px;
+    letter-spacing: 3px;
+    color: #d4af37;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.slide-text-content .main-title {
+    font-size: 42px;
+    font-weight: 800;
+    margin: 10px 0 15px 0;
+    line-height: 1.2;
+    color: #ffffff;
+}
+
+.slide-text-content .desc-text {
+    font-size: 17px;
+    color: #e8e8e8;
+    margin-bottom: 28px;
+    line-height: 1.6;
+}
+
+/* Nút bấm mua hàng */
+.btn-luxury {
+    display: inline-block;
+    background-color: #c9a063;
+    color: #000;
+    padding: 14px 32px;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 15px;
+    letter-spacing: 1.5px;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+    .btn-luxury:hover {
+        background-color: #ffffff;
+        color: #000;
+        box-shadow: 0 8px 25px rgba(201, 160, 99, 0.5);
+        transform: translate3d(0, -2px, 0);
+    }
+
+/* Nút mũi tên chuyển slide 2 bên */
+.slider-btn {
+    position: absolute;
+    top: 50%;
+    transform: translate3d(0, -50%, 0);
+    background-color: rgba(0, 0, 0, 0.55);
+    color: #ffffff;
+    border: 1.5px solid rgba(201, 160, 99, 0.6);
+    width: 52px;
+    height: 52px;
+    line-height: 48px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 22px;
+    border-radius: 50%;
+    z-index: 99 !important; /* Đảm bảo nổi hẳn lên trên cùng */
+    outline: none;
+    user-select: none;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.prev-btn {
+    left: 25px;
+}
+
+.next-btn {
+    right: 25px;
+}
+
+.slider-btn:hover {
+    background-color: #c9a063;
+    color: #000000;
+    border-color: #c9a063;
+    box-shadow: 0 0 20px rgba(201, 160, 99, 0.8);
+    transform: translate3d(0, -50%, 0) scale(1.12);
+}

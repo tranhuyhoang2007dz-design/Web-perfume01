@@ -1,4 +1,4 @@
-﻿@model Web_perfume.Models.ProductDetailViewModel
+@model Web_perfume.Models.ProductDetailViewModel
 @{
     ViewBag.Title = Model.Product.ProductName;
     var primaryImage = Model.Images.FirstOrDefault(i => i.IsPrimary)?.ImageURL 
@@ -348,87 +348,23 @@
 
 @section scripts {
     <script>
-        let currentVariantId = @(Model.SelectedVariant != null ? Model.SelectedVariant.VariantID : 0);
-
-        function switchGalleryImage(el, src) {
-            document.querySelectorAll('.gallery-thumb-item').forEach(e => e.classList.remove('active'));
-            el.classList.add('active');
-            document.getElementById('mainProductImage').src = src;
-        }
-
-        function selectVariant(btn) {
-            document.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            currentVariantId = parseInt(btn.getAttribute('data-variant-id'));
-            const volume = btn.getAttribute('data-volume');
-            const price = parseFloat(btn.getAttribute('data-price'));
-            const sale = parseFloat(btn.getAttribute('data-sale'));
-            const stock = parseInt(btn.getAttribute('data-stock'));
-            const sku = btn.getAttribute('data-sku');
-
-            document.getElementById('selectedVolumeText').textContent = volume + 'ml';
-            document.getElementById('displaySku').textContent = sku;
-
-            if (sale > 0 && sale < price) {
-                document.getElementById('displayCurrentPrice').textContent = sale.toLocaleString('vi-VN') + ' ₫';
-                document.getElementById('displayOriginalPrice').textContent = price.toLocaleString('vi-VN') + ' ₫';
-                document.getElementById('displayOriginalPrice').classList.remove('d-none');
-                document.getElementById('displayDiscountBadge').classList.remove('d-none');
-            } else {
-                document.getElementById('displayCurrentPrice').textContent = price.toLocaleString('vi-VN') + ' ₫';
-                document.getElementById('displayOriginalPrice').classList.add('d-none');
-                document.getElementById('displayDiscountBadge').classList.add('d-none');
-            }
-
-            const stockText = document.getElementById('stockStatusText');
-            const btnAdd = document.getElementById('btnAddToCart');
-            if (stock > 0) {
-                stockText.textContent = `Còn hàng (${stock} sản phẩm có sẵn)`;
-                stockText.className = 'text-success fw-bold ms-1';
-                btnAdd.disabled = false;
-            } else {
-                stockText.textContent = 'Tạm hết hàng';
-                stockText.className = 'text-danger fw-bold ms-1';
-                btnAdd.disabled = true;
-            }
-        }
-
-        function changeQuantity(delta) {
-            const input = document.getElementById('purchaseQuantity');
-            let val = parseInt(input.value) || 1;
-            val = Math.max(1, Math.min(99, val + delta));
-            input.value = val;
-        }
-
-        function onAddToCartClick() {
-            const qty = parseInt(document.getElementById('purchaseQuantity').value) || 1;
-            quickAddToCart(currentVariantId, qty);
-        }
-
-        function onBuyNowClick() {
-            const qty = parseInt(document.getElementById('purchaseQuantity').value) || 1;
-            $.post('@Url.Action("AddToCart", "Cart")', { variantId: currentVariantId, quantity: qty }, function(res) {
-                if (res && res.success) {
-                    window.location.href = '@Url.Action("Index", "Checkout")';
-                } else {
-                    showToast(res ? res.message : 'Có lỗi xảy ra', 'error');
-                }
-            });
-        }
-
-        function submitProductReview(e) {
-            e.preventDefault();
-            const form = $(e.target);
-            $.post('@Url.Action("AddReview", "Products")', form.serialize(), function (res) {
-                if (res && res.success) {
-                    showToast(res.message);
-                    setTimeout(() => location.reload(), 1200);
-                } else {
-                    showToast(res ? res.message : 'Vui lòng thử lại', 'error');
-                }
-            });
-        }
+        /**
+         * KHAI BÁO CẤU HÌNH CHO TRANG CHI TIẾT SẢN PHẨM
+         * Lý do: File product-detail.js không đọc được Razor (@Model...),
+         * nên ta truyền dữ liệu C# sang JS qua biến toàn cục này.
+         *
+         * currentVariantId: ID biến thể đang được chọn mặc định khi trang load
+         *   (ví dụ: 5 = biến thể 50ml, 8 = biến thể 100ml)
+         */
+        var DETAIL_CONFIG = {
+            currentVariantId: @(Model.SelectedVariant != null ? Model.SelectedVariant.VariantID : 0)
+        };
     </script>
+
+    <!-- File JS cho trang chi tiết sản phẩm -->
+    <!-- Chứa: switchGalleryImage, selectVariant, changeQuantity, onAddToCartClick, onBuyNowClick, submitProductReview -->
+    <script src="~/Scripts/product-detail.js"></script>
 }
+
+
 
