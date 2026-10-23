@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Web;
 using System.Web.Mvc;
+using System.Web.UI.WebControls;
 using Web_perfume.Helpers;
 using Web_perfume.Models;
 
@@ -69,7 +72,7 @@ namespace Web_perfume.Controllers
         // POST: /admin/createproduct
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult CreateProduct(Product product, int volumeML, decimal price, decimal? salePrice, int stockQuantity, string imageUrl)
+        public ActionResult CreateProduct(Product product, int volumeML, decimal price, decimal? salePrice, int stockQuantity, HttpPostedFileBase imageFile)
         {
             if (!CheckAdminAccess()) return RedirectToAction("Login", "Account");
 
@@ -78,6 +81,14 @@ namespace Web_perfume.Controllers
                 product.CreatedAt = DateTime.Now;
                 product.Slug = GenerateSlug(product.ProductName);
                 db.Products.Add(product);
+
+                var imageUrl = SaveProductImage(imageFile) ?? "/Content/images/placeholder-perfume.svg";
+                db.ProductImages.Add(new ProductImage
+                {
+                    ProductID = product.ProductID,
+                    ImageURL = imageUrl,
+                    IsPrimary = true
+                });
                 db.SaveChanges();
 
                 // Add initial Variant
@@ -287,6 +298,37 @@ namespace Web_perfume.Controllers
             str = System.Text.RegularExpressions.Regex.Replace(str, @"[^a-z0-9\s-]", "");
             str = System.Text.RegularExpressions.Regex.Replace(str, @"\s+", "-").Trim('-');
             return str;
+        }
+
+
+        private static readonly string[] AllowedImageExtensions = { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
+        private const int MaxImageBytes = 3 * 1024 * 1024;
+
+        private string ValidateImage(HttpPostedFileBase file)
+        {
+            if (file == null || file.ContentLength == 0) return null;
+
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!AllowedImageExtensions.Contains(ext))
+                return "Chỉ chấp nhận ảnh định dạng JPG, PNG, WEBP hoặc GIF.";
+            if (!file.ContentType.StartsWith("image/"))
+                return "Tệp được chọn không phải là ảnh.";
+            if (file.ContentLength > MaxImageBytes)
+                return "Ảnh không được vượt quá 3MB.";
+            return null;
+        }
+
+        private string SaveProductImage(HttpPostedFileBase file)
+        {
+            if (file == null || file.ContentLength == 0) return null;
+
+            var folder = Server.MapPath("~/Content/images/products");
+            Directory.CreateDirectory(folder);
+
+            var fileName = Guid.NewGuid().ToString("N") + Path.GetExtension(file.FileName).ToLowerInvariant();
+            file.SaveAs(Path.Combine(folder, fileName));
+
+            return Url.Content("~/Content/images/products/" + fileName);
         }
 
         protected override void Dispose(bool disposing)
