@@ -57,7 +57,7 @@
     <header class="luxury-header">
         <div class="container">
             <div class="d-flex align-items-center justify-content-between">
-                
+
                 <!-- Mobile Menu Button -->
                 <button class="nav-action-btn d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu" aria-label="Menu">
                     <i class="bi bi-list fs-3"></i>
@@ -66,8 +66,8 @@
                 <!-- Brand Logo -->
                 <a href="@Url.Action("Index", "Home")" class="brand-logo-wrapper">
                     <img src="~/Content/images/logo-vespera-transparent.png" alt="Vespera Perfume" class="brand-logo-img"
-                         style="height: 42px !important; width: auto !important; display: block !important;  "  />
-                </a>    
+                         style="height: 42px !important; width: auto !important; display: block !important;  " />
+                </a>
 
                 <!-- Desktop Navigation -->
                 <nav class="d-none d-lg-block">
@@ -108,7 +108,7 @@
                                 }
                                 <li><a class="dropdown-item py-2" href="@Url.Action("Profile", "Account")"><i class="bi bi-person-lines-fill me-2"></i>Tài khoản của tôi</a></li>
                                 <li><a class="dropdown-item py-2" href="@Url.Action("Profile", "Account")#orders"><i class="bi bi-box-seam me-2"></i>Lịch sử đơn hàng</a></li>
-                                    <li><hr class="dropdown-divider"></li>
+                                <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item py-2 text-danger" href="@Url.Action("Logout", "Account")"><i class="bi bi-box-arrow-right me-2"></i>Đăng xuất</a></li>
                             }
                             else
@@ -277,8 +277,8 @@
 
     <!--
         KHAI BÁO BIẾN URL DÙNG CHUNG CHO JAVASCRIPT-->
-        @*Lý do: File .js thuần không đọc được cú pháp Razor (@Url.Action),*@
-        <!--nên ta khai báo URL ở đây (trong .cshtml) rồi truyền sang file .js qua biến toàn cục.
+    @*Lý do: File .js thuần không đọc được cú pháp Razor (@Url.Action),*@
+    <!--nên ta khai báo URL ở đây (trong .cshtml) rồi truyền sang file .js qua biến toàn cục.
         Các file .js chỉ cần đọc SITE_URLS.cartAddUrl, SITE_URLS.checkoutUrl, v.v.
     -->
     <script>
@@ -294,6 +294,8 @@
 
     <!-- Phần tử này để các View con chèn thêm script riêng (nếu cần) -->
     @RenderSection("scripts", required: false)
+
+    <script src="//code.tidio.co/cjy33e0oeuzeas7eheoxgl2j7cjxchsj.js" async></script>
 </body>
 </html>
 
