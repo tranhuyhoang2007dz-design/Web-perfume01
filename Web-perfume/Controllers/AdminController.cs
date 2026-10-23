@@ -323,6 +323,79 @@ namespace Web_perfume.Controllers
             return RedirectToAction("Categories");
         }
 
+        // POST: /admin/editcategory
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult EditCategory(Category category, bool IsActive = false)
+        {
+            if (!CheckAdminAccess()) return RedirectToAction("Login", "Account");
+
+            var name = (category.CategoryName ?? "").Trim();
+            if (name.Length == 0)
+            {
+                TempData["AdminError"] = "Vui lòng nhập tên danh mục.";
+                return RedirectToAction("Categories");
+            }
+            if (db.Categories.Any(c => c.CategoryName == name && c.CategoryID != category.CategoryID))
+            {
+                TempData["AdminError"] = "Tên danh mục \"" + name + "\" đã tồn tại.";
+                return RedirectToAction("Categories");
+            }
+
+            var existing = db.Categories.Find(category.CategoryID);
+            if (existing == null) return HttpNotFound();
+
+            existing.CategoryName = name;
+            existing.Slug = GenerateSlug(name);
+            existing.Description = category.Description;
+            existing.IsActive = IsActive;
+            db.SaveChanges();
+
+            TempData["AdminSuccess"] = "Cập nhật danh mục " + name + " thành công!";
+            return RedirectToAction("Categories");
+        }
+
+        // POST: /admin/togglecategory
+        [HttpPost]
+        public ActionResult ToggleCategory(int id)
+        {
+            if (!CheckAdminAccess()) return Json(new { success = false, message = "Chưa đăng nhập quyền Admin" });
+
+            var category = db.Categories.Find(id);
+            if (category == null) return Json(new { success = false });
+
+            category.IsActive = !category.IsActive;
+            db.SaveChanges();
+            return Json(new { success = true, isActive = category.IsActive });
+        }
+
+        // GET: /admin/getcategoryproducts?id=1
+        [HttpGet]
+        public ActionResult GetCategoryProducts(int id)
+        {
+            if (!CheckAdminAccess())
+                return Json(new { success = false, message = "Không có quyền" }, JsonRequestBehavior.AllowGet);
+
+            var products = db.Products
+                .Where(p => p.CategoryID == id)
+                .OrderByDescending(p => p.ProductID)
+                .ToList()
+                .Select(p => new
+                {
+                    id = p.ProductID,
+                    name = p.ProductName,
+                    brand = p.Brand != null ? p.Brand.BrandName : "",
+                    gender = p.Gender,
+                    isActive = p.IsActive,
+                    image = p.ProductImages.FirstOrDefault(i => i.IsPrimary)?.ImageURL
+                            ?? p.ProductImages.FirstOrDefault()?.ImageURL
+                            ?? "/Content/images/placeholder-perfume.svg"
+                })
+                .ToList();
+
+            return Json(new { success = true, products = products }, JsonRequestBehavior.AllowGet);
+        }
+
         // ==========================================
         // 5. ORDERS MANAGEMENT
         // ==========================================
