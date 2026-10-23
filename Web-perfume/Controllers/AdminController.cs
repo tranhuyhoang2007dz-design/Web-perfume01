@@ -143,17 +143,21 @@ namespace Web_perfume.Controllers
             var product = db.Products.Find(id.Value);
             if (product == null) return HttpNotFound();
 
-            ViewBag.BrandID = new SelectList(db.Brands.Where(b => b.IsActive), "BrandID", "BrandName", product.BrandID);
-            ViewBag.CategoryID = new SelectList(db.Categories.Where(c => c.IsActive), "CategoryID", "CategoryName", product.CategoryID);
+            LoadEditProductData(product);
             return View(product);
         }
 
         // POST: /admin/editproduct/{id}
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult EditProduct(Product product)
+        public ActionResult EditProduct(Product product, HttpPostedFileBase imageFile,
+            int? primaryImageId, int[] deleteImageIds, bool setNewAsPrimary = false)
         {
             if (!CheckAdminAccess()) return RedirectToAction("Login", "Account");
+
+            var imageError = ValidateImage(imageFile);
+            if (imageError != null)
+                ModelState.AddModelError("", imageError);
 
             if (ModelState.IsValid)
             {
@@ -169,15 +173,85 @@ namespace Web_perfume.Controllers
                     existing.IsFeatured = product.IsFeatured;
                     existing.IsActive = product.IsActive;
 
+                    // 1. Xóa các ảnh được chọn
+                    if (deleteImageIds != null && deleteImageIds.Length > 0)
+                    {
+                        var toDelete = existing.ProductImages
+                            .Where(i => deleteImageIds.Contains(i.ImageID))
+                            .ToList();
+                        foreach (var img in toDelete)
+                        {
+                            DeleteImageFile(img.ImageURL);
+                            db.ProductImages.Remove(img);
+                        }
+                    }
+
+                    // Ảnh còn lại sau khi xóa
+                    var remaining = existing.ProductImages
+                        .Where(i => deleteImageIds == null || !deleteImageIds.Contains(i.ImageID))
+                        .ToList();
+
+                    // 2. Đổi ảnh chính theo lựa chọn
+                    if (primaryImageId.HasValue && remaining.Any(i => i.ImageID == primaryImageId.Value))
+                    {
+                        foreach (var img in remaining)
+                            img.IsPrimary = (img.ImageID == primaryImageId.Value);
+                    }
+
+                    // 3. Thêm ảnh mới
+                    var newUrl = SaveProductImage(imageFile);
+                    if (newUrl != null)
+                    {
+                        bool makePrimary = setNewAsPrimary || !remaining.Any();
+                        if (makePrimary)
+                        {
+                            foreach (var img in remaining) img.IsPrimary = false;
+                        }
+                        db.ProductImages.Add(new ProductImage
+                        {
+                            ProductID = existing.ProductID,
+                            ImageURL = newUrl,
+                            IsPrimary = makePrimary
+                        });
+                    }
+                    else if (remaining.Any() && !remaining.Any(i => i.IsPrimary))
+                    {
+                        // Đảm bảo luôn có một ảnh chính
+                        remaining.First().IsPrimary = true;
+                    }
+
                     db.SaveChanges();
                     TempData["AdminSuccess"] = "Cập nhật sản phẩm thành công!";
                     return RedirectToAction("Products");
                 }
             }
 
+            LoadEditProductData(product);
+            return View(product);
+        }
+
+        private void LoadEditProductData(Product product)
+        {
             ViewBag.BrandID = new SelectList(db.Brands.Where(b => b.IsActive), "BrandID", "BrandName", product.BrandID);
             ViewBag.CategoryID = new SelectList(db.Categories.Where(c => c.IsActive), "CategoryID", "CategoryName", product.CategoryID);
-            return View(product);
+            ViewBag.Images = db.ProductImages
+                .Where(i => i.ProductID == product.ProductID)
+                .OrderByDescending(i => i.IsPrimary)
+                .ToList();
+        }
+
+        // Chỉ xóa file do hệ thống upload, không đụng tới placeholder hay ảnh ngoài
+        private void DeleteImageFile(string imageUrl)
+        {
+            if (string.IsNullOrEmpty(imageUrl)) return;
+            if (!imageUrl.StartsWith("/Content/images/products/", StringComparison.OrdinalIgnoreCase)) return;
+
+            try
+            {
+                var path = Server.MapPath("~" + imageUrl);
+                if (System.IO.File.Exists(path)) System.IO.File.Delete(path);
+            }
+            catch { /* bỏ qua lỗi xóa file */ }
         }
 
         // POST: /admin/deleteproduct/{id}

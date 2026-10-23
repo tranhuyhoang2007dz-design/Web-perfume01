@@ -2,6 +2,8 @@
 @{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
     ViewBag.Title = "Chỉnh Sửa Nước Hoa";
+    var images = (ViewBag.Images as IEnumerable<Web_perfume.Models.ProductImage>)
+                 ?? Enumerable.Empty<Web_perfume.Models.ProductImage>();
 }
 
 <div class="row justify-content-center">
@@ -14,9 +16,10 @@
                 </a>
             </div>
 
-            @using (Html.BeginForm("EditProduct", "Admin", FormMethod.Post))
+            @using (Html.BeginForm("EditProduct", "Admin", FormMethod.Post, new { enctype = "multipart/form-data" }))
             {
                 @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true, "", new { @class = "alert alert-danger small" })
                 @Html.HiddenFor(m => m.ProductID)
                 @Html.HiddenFor(m => m.Slug)
                 @Html.HiddenFor(m => m.CreatedAt)
@@ -52,6 +55,62 @@
                         @Html.TextAreaFor(m => m.Description, new { @class = "form-control", rows = "5" })
                     </div>
 
+                    <!-- Images -->
+                    <div class="col-12 pt-3 border-top">
+                        <h6 class="text-uppercase small fw-bold text-gold letter-spacing-1 mb-3">Hình ảnh sản phẩm</h6>
+                    </div>
+
+                    @if (images.Any())
+                    {
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold text-uppercase">Ảnh hiện có:</label>
+                            <div class="row g-3">
+                                @foreach (var img in images)
+                                {
+                                    <div class="col-6 col-md-3 col-lg-2">
+                                        <div class="border p-2 h-100 text-center">
+                                            <img src="@img.ImageURL" alt="Ảnh sản phẩm"
+                                                 style="width: 100%; height: 120px; object-fit: cover;"
+                                                 onerror="this.src='/Content/images/placeholder-perfume.svg'" />
+                                            <div class="form-check mt-2 text-start">
+                                                <input class="form-check-input" type="radio" name="primaryImageId"
+                                                       id="primary_@img.ImageID" value="@img.ImageID" @(img.IsPrimary ? "checked" : "") />
+                                                <label class="form-check-label small" for="primary_@img.ImageID">Ảnh chính</label>
+                                            </div>
+                                            <div class="form-check text-start">
+                                                <input class="form-check-input" type="checkbox" name="deleteImageIds"
+                                                       id="del_@img.ImageID" value="@img.ImageID" />
+                                                <label class="form-check-label small text-danger" for="del_@img.ImageID">Xóa ảnh</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-12">
+                            <div class="text-muted small">Sản phẩm này chưa có ảnh nào.</div>
+                        </div>
+                    }
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold text-uppercase">Thêm ảnh mới:</label>
+                        <input type="file" name="imageFile" id="imageFile" class="form-control"
+                               accept="image/png, image/jpeg, image/webp, image/gif" />
+                        <div class="form-text">JPG, PNG, WEBP hoặc GIF, tối đa 3MB.</div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" name="setNewAsPrimary" value="true" id="setNewAsPrimary" checked />
+                            <label class="form-check-label small" for="setNewAsPrimary">Đặt ảnh mới làm ảnh chính</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <img id="imagePreview" alt="Xem trước ảnh" class="border d-none"
+                             style="max-width: 100%; max-height: 160px; object-fit: cover;" />
+                    </div>
+
                     <div class="col-12 pt-3 border-top">
                         <div class="form-check form-check-inline me-4">
                             @Html.CheckBoxFor(m => m.IsFeatured, new { @class = "form-check-input" })
@@ -74,3 +133,18 @@
     </div>
 </div>
 
+<script>
+    document.getElementById('imageFile').addEventListener('change', function () {
+        var file = this.files[0];
+        var img = document.getElementById('imagePreview');
+        if (!file) { img.classList.add('d-none'); return; }
+        if (file.size > 3 * 1024 * 1024) {
+            alert('Ảnh vượt quá 3MB, vui lòng chọn ảnh nhỏ hơn.');
+            this.value = '';
+            img.classList.add('d-none');
+            return;
+        }
+        img.src = URL.createObjectURL(file);
+        img.classList.remove('d-none');
+    });
+</script>
