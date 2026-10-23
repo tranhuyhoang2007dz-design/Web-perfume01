@@ -355,6 +355,7 @@
     <Content Include="Views\Products\Index.cshtml" />
     <Content Include="Views\Shared\_AdminLayout.cshtml" />
     <Content Include="Views\Shared\_ProductCard.cshtml" />
+    <Content Include="Views\Checkout\PaymentQR.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

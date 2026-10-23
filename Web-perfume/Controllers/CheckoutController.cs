@@ -185,6 +185,13 @@ namespace Web_perfume.Controllers
                 CartHelper.ClearCart(Session, db);
                 Session.Remove("APPLIED_COUPON");
 
+                // KIỂM TRA PHƯƠNG THỨC THANH TOÁN: Nếu là chuyển khoản online / VietQR
+                if (order.PaymentMethod == "BankTransfer" || order.PaymentMethod == "VietQR" || order.PaymentMethod == "Online")
+                {
+                    return RedirectToAction("PaymentQR", new { orderCode = order.OrderCode });
+                }
+
+                // Nếu là COD hoặc phương thức khác thì về trang đặt hàng thành công thông thường
                 return RedirectToAction("OrderSuccess", new { id = order.OrderID });
             }
             catch (Exception ex)
@@ -215,6 +222,27 @@ namespace Web_perfume.Controllers
         {
             if (disposing) db.Dispose();
             base.Dispose(disposing);
+        }
+
+        // GET: Checkout/PaymentQR
+        public ActionResult PaymentQR(string orderCode)
+        {
+            var order = db.Orders.FirstOrDefault(o => o.OrderCode == orderCode);
+            if (order == null)
+            {
+                return HttpNotFound("Không tìm thấy đơn hàng!");
+            }
+
+            string bankId = "VietinBank"; // Thay bằng mã ngân hàng của bạn
+            string accountNo = "102876116407"; // Thay bằng STK của bạn
+            string accountName = Uri.EscapeDataString("TRAN HUY HOANG"); // Tên chủ TK
+            string addInfo = Uri.EscapeDataString(order.OrderCode);
+            long amount = Convert.ToInt64(order.TotalAmount);
+
+            string qrUrl = $"https://img.vietqr.io/image/{bankId}-{accountNo}-compact2.png?amount={amount}&addInfo={addInfo}&accountName={accountName}";
+
+            ViewBag.QrUrl = qrUrl;
+            return View(order);
         }
     }
 }

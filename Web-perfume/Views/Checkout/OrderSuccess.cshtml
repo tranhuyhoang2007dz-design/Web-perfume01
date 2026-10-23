@@ -39,6 +39,49 @@
                         </div>
                     </div>
                 </div>
+                <!-- Khối hiển thị mã QR thanh toán nếu là chuyển khoản -->
+                @if (Model.PaymentMethod != "COD")
+                {
+                    var bankId = "VietinBank";
+                    var accountNo = "102876116407";
+                    var accountName = Uri.EscapeDataString("TRAN HUY HOANG");
+                    var addInfo = Uri.EscapeDataString(Model.OrderCode);
+                    var amount = Convert.ToInt64(Model.TotalAmount);
+
+                    var qrUrl = $"https://img.vietqr.io/image/{bankId}-{accountNo}-compact2.png?amount={amount}&addInfo={addInfo}&accountName={accountName}";
+
+                    <div class="card border border-light-subtle rounded-0 bg-light p-4 mb-4 text-center">
+                        <h5 class="font-serif mb-2 text-danger">QUÉT MÃ QR ĐỂ THANH TOÁN</h5>
+                        <p class="text-muted small mb-3">Sử dụng ứng dụng ngân hàng hoặc ví điện tử bất kỳ để quét mã</p>
+
+                        <div class="mb-3">
+                            <img src="@qrUrl" class="img-fluid border bg-white p-2" style="max-width: 260px;" alt="Mã VietQR" />
+                        </div>
+
+                        <div class="text-start bg-white p-3 border text-secondary small mx-auto" style="max-width: 380px;">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Ngân hàng:</span>
+                                <strong class="text-dark">VietinBank</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Số tài khoản:</span>
+                                <strong class="text-dark">102876116407</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Chủ tài khoản:</span>
+                                <strong class="text-dark">TRAN HUY HOANG</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Số tiền:</span>
+                                <strong class="text-danger">@Model.TotalAmount.ToString("N0") ₫</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Nội dung chuyển khoản:</span>
+                                <strong class="text-primary">@Model.OrderCode</strong>
+                            </div>
+                        </div>
+                    </div>
+                }
 
                 <!-- Order Items Snapshot List -->
                 <h5 class="font-serif text-start mb-3">Chi Tiết Sản Phẩm Trong Đơn</h5>

@@ -1,22 +1,19 @@
-﻿/* ================= BANNER SLIDER STYLES (SIÊU MƯỢT MÀ & KHUNG CHỮ TO) ================= */
+﻿/* ================= BANNER SLIDER STYLES (ĐỨNG YÊN 100% - KHÔNG ZOOM) ================= */
 .hero-section {
     position: relative;
     width: 100%;
-    height: 560px; /* Chiều cao thoáng rộng */
+    height: 560px;
     overflow: hidden;
     background-color: #0b0b0b;
 }
 
-/* Style dành riêng cho ảnh có sẵn chữ (Slide 2) */
+/* Ảnh thuần (Slide 2) - Cố định hoàn toàn */
 .banner-img-pure {
     width: 100%;
     height: 560px;
     object-fit: cover;
     display: block;
-    /* Hiệu ứng Zoom mượt nhẹ cho slide 2 */
-    transform: scale(1) translate3d(0, 0, 0);
-    will-change: transform;
-    transition: transform 7s cubic-bezier(0.25, 1, 0.5, 1);
+    transform: none !important; /* Triệt tiêu mọi lệnh scale cũ */
 }
 
 .my-slide {
@@ -25,7 +22,6 @@
     left: 0;
     width: 100%;
     height: 100%;
-    /* Chuyển đổi trạng thái bằng opacity thay vì display:none để có animation mượt */
     opacity: 0;
     visibility: hidden;
     will-change: opacity, visibility;
@@ -39,7 +35,7 @@
         z-index: 2;
     }
 
-/* Ảnh nền với hiệu ứng phóng to chậm (Ken Burns effect) */
+/* Ảnh nền Slide - Cố định hoàn toàn, không zoom */
 .slide-bg {
     width: 100%;
     height: 100%;
@@ -50,15 +46,7 @@
     top: 0;
     left: 0;
     z-index: 1;
-    transform: scale(1) translate3d(0, 0, 0);
-    will-change: transform;
-    transition: transform 7s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-/* Khi slide active: Phóng to ảnh nhẹ 1.08x */
-.my-slide.active .slide-bg,
-.my-slide.active .banner-img-pure {
-    transform: scale(1.08) translate3d(0, 0, 0);
+    transform: none !important; /* Triệt tiêu mọi lệnh scale cũ */
 }
 
 /* Khung container căn chỉnh */
@@ -70,7 +58,7 @@
     align-items: center;
 }
 
-/* PHẦN KHUNG CHỨA CHỮ - KẾT HỢP HIỆU ỨNG TRƯỢT TỪ DƯỚI LÊN */
+/* PHẦN KHUNG CHỨA CHỮ - TRƯỢT MƯỢT MÀ */
 .slide-text-content {
     max-width: 650px;
     color: #fff;
@@ -80,7 +68,6 @@
     -webkit-backdrop-filter: blur(10px);
     border-radius: 12px;
     border-left: 4px solid #c9a063;
-    /* Hiệu ứng xuất hiện mượt mà cho khối chữ */
     opacity: 0;
     transform: translate3d(0, 30px, 0);
     will-change: transform, opacity;
@@ -153,7 +140,7 @@
     cursor: pointer;
     font-size: 22px;
     border-radius: 50%;
-    z-index: 99 !important; /* Đảm bảo nổi hẳn lên trên cùng */
+    z-index: 99 !important;
     outline: none;
     user-select: none;
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -173,4 +160,28 @@
     border-color: #c9a063;
     box-shadow: 0 0 20px rgba(201, 160, 99, 0.8);
     transform: translate3d(0, -50%, 0) scale(1.12);
+}
+/* Khung chứa tổng thể: Có lề hai bên (không full màn hình), bo góc tinh tế */
+.hero-section {
+    position: relative;
+    width: 92%; /* Thu hẹp lại để chừa khoảng trống 2 bên */
+    max-width: 1320px; /* Giới hạn độ rộng tối đa */
+    height: 480px; /* Giảm chiều cao xuống một chút cho thanh thoát (hoặc giữ 560px tùy ý) */
+    margin: 20px auto; /* Căn giữa màn hình và tạo khoảng cách trên dưới */
+    overflow: hidden;
+    border-radius: 16px; /* Bo tròn 4 góc xịn sò giống mẫu */
+    background-color: #f7f9fa; /* Màu nền chờ (nếu ảnh tải chậm) */
+}
+
+/* Ảnh thuần hoặc ảnh nền đều được bo góc và căn fit hoàn hảo */
+.banner-img-pure,
+.slide-bg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background-size: cover;
+    background-position: center;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
