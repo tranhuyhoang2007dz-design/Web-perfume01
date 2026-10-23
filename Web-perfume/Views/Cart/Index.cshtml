@@ -142,9 +142,9 @@
                         </span>
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-baseline mb-4">
-                        <span class="font-serif fs-5 fw-bold">Tổng thanh toán:</span>
-                        <span class="display-6 fw-bold text-dark">@Model.TotalAmount.ToString("N0") ₫</span>
+                    <div class="d-flex justify-content-between align-items-baseline gap-2 mb-4">
+                        <span class="font-serif fs-6 fw-bold text-nowrap">Tổng thanh toán:</span>
+                        <span class="fs-4 fw-bold text-dark text-nowrap">@Model.TotalAmount.ToString("N0") ₫</span>
                     </div>
 
                     <a href="@Url.Action("Index", "Checkout")" class="btn btn-luxury-dark w-100 py-3 text-center">
