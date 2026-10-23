@@ -1,0 +1,104 @@
+﻿@model Web_perfume.Models.Brand
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewBag.Title = "Chỉnh Sửa Thương Hiệu";
+    int productCount = ViewBag.ProductCount != null ? (int)ViewBag.ProductCount : 0;
+}
+
+<div class="row g-4">
+    <!-- Left: Edit Form -->
+    <div class="col-lg-8">
+        <div class="card border border-light-subtle rounded-0 bg-white p-4 shadow-none">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                <h5 class="font-serif mb-0">Chỉnh Sửa Thương Hiệu</h5>
+                <a href="@Url.Action("Brands", "Admin")" class="small text-muted">
+                    <i class="bi bi-arrow-left"></i> Quay lại danh sách
+                </a>
+            </div>
+
+            @if (TempData["AdminError"] != null)
+            {
+                <div class="alert alert-danger small">@TempData["AdminError"]</div>
+            }
+
+            @using (Html.BeginForm("EditBrand", "Admin", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(m => m.BrandID)
+                @Html.ValidationSummary(true, "", new { @class = "alert alert-danger small" })
+
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label class="form-label small fw-semibold text-uppercase">Tên thương hiệu:</label>
+                        <input type="text" name="BrandName" class="form-control" value="@Model.BrandName" maxlength="100" required />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold text-uppercase">Quốc gia xuất xứ:</label>
+                        <input type="text" name="Country" class="form-control" value="@Model.Country" maxlength="100" />
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label small fw-semibold text-uppercase">Mô tả:</label>
+                        <textarea name="Description" class="form-control" rows="8">@Model.Description</textarea>
+                    </div>
+
+                    <div class="col-12 pt-3 border-top">
+                        <div class="form-check">
+                            @Html.CheckBoxFor(m => m.IsActive, new { @class = "form-check-input", id = "checkActive" })
+                            <label class="form-check-label small fw-semibold" for="checkActive">
+                                Đang hoạt động (bỏ chọn để tạm ẩn thương hiệu)
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mt-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-luxury-dark px-4 py-2">
+                            <i class="bi bi-check2-circle me-1"></i> Lưu Thay Đổi
+                        </button>
+                        <a href="@Url.Action("Brands", "Admin")" class="btn btn-luxury-outline px-4 py-2">Hủy</a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Right: Stats + Delete -->
+    <div class="col-lg-4">
+        <div class="stat-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted small text-uppercase fw-semibold">Số Nước Hoa</span>
+                <span class="fs-4 text-warning"><i class="bi bi-droplet"></i></span>
+            </div>
+            <div class="display-6 fw-bold text-dark">@productCount</div>
+            <a href="@Url.Action("Detail", "Brands", new { id = Model.BrandID })" target="_blank" class="small text-warning text-decoration-none mt-2 d-inline-block">
+                Xem trang thương hiệu <i class="bi bi-box-arrow-up-right"></i>
+            </a>
+        </div>
+
+        <div class="card border border-danger-subtle rounded-0 bg-white p-4 shadow-none">
+            <h5 class="font-serif mb-3 pb-2 border-bottom text-danger">Xóa Thương Hiệu</h5>
+
+            @if (productCount > 0)
+            {
+                <p class="small text-muted mb-0">
+                    Thương hiệu đang có <strong>@productCount</strong> sản phẩm nên chưa thể xóa.
+                    Bạn có thể bỏ chọn "Đang hoạt động" để tạm ẩn, hoặc chuyển các sản phẩm sang thương hiệu khác trước.
+                </p>
+            }
+            else
+            {
+                <p class="small text-muted">Thương hiệu chưa có sản phẩm nào. Việc xóa không thể hoàn tác.</p>
+
+                using (Html.BeginForm("DeleteBrand", "Admin", FormMethod.Post, new { onsubmit = "return confirm('Xóa thương hiệu này? Thao tác không thể hoàn tác.');" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.BrandID" />
+                    <button type="submit" class="btn btn-outline-danger rounded-0 w-100 py-2">
+                        <i class="bi bi-trash3 me-1"></i> Xóa thương hiệu
+                    </button>
+                }
+            }
+        </div>
+    </div>
+</div>

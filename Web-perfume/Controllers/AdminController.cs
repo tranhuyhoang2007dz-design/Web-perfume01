@@ -224,6 +224,77 @@ namespace Web_perfume.Controllers
             return RedirectToAction("Brands");
         }
 
+        // GET: /admin/editbrand/{id}
+        public ActionResult EditBrand(int? id)
+        {
+            if (!CheckAdminAccess()) return RedirectToAction("Login", "Account");
+            if (!id.HasValue) return RedirectToAction("Brands");
+
+            var brand = db.Brands.Find(id.Value);
+            if (brand == null) return HttpNotFound();
+
+            ViewBag.ProductCount = db.Products.Count(p => p.BrandID == brand.BrandID);
+            return View(brand);
+        }
+
+        // POST: /admin/editbrand/{id}
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult EditBrand(Brand brand)
+        {
+            if (!CheckAdminAccess()) return RedirectToAction("Login", "Account");
+
+            var name = (brand.BrandName ?? "").Trim();
+            if (name.Length == 0)
+                ModelState.AddModelError("", "Vui lòng nhập tên thương hiệu.");
+            else if (db.Brands.Any(b => b.BrandName == name && b.BrandID != brand.BrandID))
+                ModelState.AddModelError("", "Tên thương hiệu \"" + name + "\" đã tồn tại.");
+
+            if (ModelState.IsValid)
+            {
+                var existing = db.Brands.Find(brand.BrandID);
+                if (existing == null) return HttpNotFound();
+
+                existing.BrandName = name;
+                existing.Country = brand.Country;
+                existing.Description = brand.Description;
+                existing.IsActive = brand.IsActive;
+                db.SaveChanges();
+
+                TempData["AdminSuccess"] = "Cập nhật thương hiệu " + name + " thành công!";
+                return RedirectToAction("Brands");
+            }
+
+            ViewBag.ProductCount = db.Products.Count(p => p.BrandID == brand.BrandID);
+            return View(brand);
+        }
+
+        // POST: /admin/deletebrand
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult DeleteBrand(int id)
+        {
+            if (!CheckAdminAccess()) return RedirectToAction("Login", "Account");
+
+            var brand = db.Brands.Find(id);
+            if (brand == null) return HttpNotFound();
+
+            var productCount = db.Products.Count(p => p.BrandID == id);
+            if (productCount > 0)
+            {
+                TempData["AdminError"] = "Không thể xóa vì thương hiệu còn " + productCount
+                    + " sản phẩm. Hãy chuyển sản phẩm sang thương hiệu khác hoặc chọn Tạm ẩn.";
+                return RedirectToAction("EditBrand", new { id = id });
+            }
+
+            var brandName = brand.BrandName;
+            db.Brands.Remove(brand);
+            db.SaveChanges();
+
+            TempData["AdminSuccess"] = "Đã xóa thương hiệu " + brandName + ".";
+            return RedirectToAction("Brands");
+        }
+
         // ==========================================
         // 4. CATEGORY MANAGEMENT (CRUD)
         // ==========================================

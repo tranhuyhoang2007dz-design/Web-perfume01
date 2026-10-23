@@ -50,7 +50,7 @@
                             <th>Quốc gia</th>
                             <th>Số nước hoa</th>
                             <th>Trạng thái</th>
-                            <th class="text-end">Xem</th>
+                            <th class="text-end">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -72,7 +72,10 @@
                                     }
                                 </td>
                                 <td class="text-end">
-                                    <a href="@Url.Action("Detail", "Brands", new { id = b.BrandID })" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                    <a href="@Url.Action("EditBrand", "Admin", new { id = b.BrandID })" class="btn btn-sm btn-outline-secondary" title="Chỉnh sửa">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <a href="@Url.Action("Detail", "Brands", new { id = b.BrandID })" target="_blank" class="btn btn-sm btn-outline-secondary" title="Xem trang thương hiệu">
                                         <i class="bi bi-box-arrow-up-right"></i>
                                     </a>
                                 </td>
