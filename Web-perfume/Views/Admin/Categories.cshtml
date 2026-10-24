@@ -76,10 +76,6 @@
                                                 data-active="@(c.IsActive ? "true" : "false")">
                                             <i class="bi bi-pencil"></i>
                                         </button>
-                                        <button type="button" class="btn btn-outline-secondary"
-                                                onclick="toggleCategoryActive(@c.CategoryID)" title="Ẩn/Hiện">
-                                            <i class="bi bi-eye"></i>
-                                        </button>
                                         <button type="button" class="btn btn-outline-secondary btn-view-category"
                                                 title="Xem sản phẩm trong danh mục"
                                                 data-id="@c.CategoryID"
@@ -200,19 +196,6 @@
             $('#editCategoryActive').prop('checked', String(b.data('active')) === 'true');
             showModal('editCategoryModal');
         });
-
-        // ---------- Ẩn/Hiện danh mục ----------
-        function toggleCategoryActive(id) {
-            if (confirm('Bạn có chắc muốn thay đổi trạng thái hiển thị của danh mục này?')) {
-                $.post('@Url.Action("ToggleCategory", "Admin")', { id: id }, function (res) {
-                    if (res && res.success) {
-                        location.reload();
-                    } else {
-                        alert('Không thể thực hiện thao tác.');
-                    }
-                });
-            }
-        }
 
         // ---------- Xem sản phẩm trong danh mục ----------
         $(document).on('click', '.btn-view-category', function () {
